@@ -120,9 +120,9 @@
     .btn-env:disabled { opacity:.5; cursor:default; }
     .btn-peligro { color:var(--rojo); border-color:#eccfca; }
     .btn-peligro:hover { background:#fbeae8; }
-    .filtros { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-    .f-in { padding:8px 10px; font-size:13.5px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); background:#fff; min-width:130px; }
-    .f-in:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .fila-filtros th { background:var(--sand-2); padding:6px 12px 10px; border-bottom:1px solid var(--gris-claro); }
+    .f-col { width:100%; min-width:90px; padding:6px 8px; font-size:12.5px; font-weight:400; border:1px solid var(--gris-claro); border-radius:7px; color:var(--azul); background:#fff; text-transform:none; letter-spacing:normal; }
+    .f-col:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
     .codigo { color:var(--azul-medio); font-variant-numeric:tabular-nums; }
 
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
@@ -161,18 +161,10 @@
       <section id="vistaTablero" class="vista">
         <div class="head">
           <div><p class="kicker">Recordatorios WhatsApp</p><h2>Tablero del día</h2></div>
-          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="recVaciar" class="btn-sec btn-peligro">Vaciar día</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
+          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="fLimpiar" class="btn-sec">Limpiar filtros</button><button id="recVaciar" class="btn-sec btn-peligro">Vaciar día</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
         </div>
         <div id="recProbarMsg" style="margin:0 0 14px;font-size:14px;line-height:1.4"></div>
         <div id="recKpis" class="kpis"></div>
-        <div class="filtros">
-          <input id="fCodigo" class="f-in" placeholder="Código paciente">
-          <input id="fTel" class="f-in" placeholder="Teléfono">
-          <select id="fDoctor" class="f-in"><option value="">Doctor: todos</option></select>
-          <select id="fEstado" class="f-in"><option value="">Estado: todos</option></select>
-          <select id="fDur" class="f-in"><option value="">Duración: todas</option></select>
-          <button id="fLimpiar" class="btn-sec">Limpiar filtros</button>
-        </div>
         <div class="tabla-wrap"><div id="recCuerpo" class="scroll-x"></div></div>
       </section>
 
@@ -230,7 +222,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.6.0 — importar + tablero (filtros, duración, código, vaciar) + estadísticas + plantillas</footer>
+    <footer>Automatiza · v0.6.1 — importar + tablero (filtros en cabecera, duración, código) + estadísticas + plantillas</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -299,12 +291,10 @@
       $('recProbar').addEventListener('click', rec_probar);
       $('recVaciar').addEventListener('click', rec_vaciar);
       $('recCuerpo').addEventListener('click', rec_clicTabla);
-      ['fCodigo','fTel','fDoctor','fEstado','fDur'].forEach(id=>{
-        $(id).addEventListener('input', rec_aplicarFiltros);
-        $(id).addEventListener('change', rec_aplicarFiltros);
-      });
+      $('recCuerpo').addEventListener('input', rec_aplicarFiltros);
+      $('recCuerpo').addEventListener('change', rec_aplicarFiltros);
       $('fLimpiar').addEventListener('click', ()=>{
-        ['fCodigo','fTel','fDoctor','fEstado','fDur'].forEach(id=>$(id).value='');
+        ['fCodigo','fTel','fDoctor','fEstado','fDur'].forEach(id=>{ const el=$(id); if(el) el.value=''; });
         rec_aplicarFiltros();
       });
       rec_cargar();
@@ -342,14 +332,34 @@
       rec_cargar();
     }
     async function rec_cargar(){
-      const cuerpo=$('recCuerpo'), kpis=$('recKpis');
-      cuerpo.innerHTML='<div class="cargando">Cargando citas…</div>'; kpis.innerHTML='';
+      $('recCuerpo').innerHTML='<div class="cargando">Cargando citas…</div>'; $('recKpis').innerHTML='';
       const { startISO, endISO } = dayBoundsFull($('recFecha').value);
       const { data, error } = await sb.from('recordatorios').select('*').gte('fecha_cita',startISO).lt('fecha_cita',endISO).order('fecha_cita',{ascending:true});
-      if(error){ cuerpo.innerHTML='<div class="error-box">No se pudieron cargar las citas.</div>'; return; }
+      if(error){ $('recCuerpo').innerHTML='<div class="error-box">No se pudieron cargar las citas.</div>'; return; }
       rec_rows = data||[];
-      rec_poblarFiltros();
+      rec_renderKpis(rec_rows);
+      rec_construirTabla();
       rec_aplicarFiltros();
+    }
+    function rec_construirTabla(){
+      $('recCuerpo').innerHTML=
+        `<table>
+          <thead>
+            <tr><th>Hora</th><th class="num">Dur.</th><th>Código</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Estado</th><th>Recordatorio</th></tr>
+            <tr class="fila-filtros">
+              <th></th>
+              <th class="num"><select id="fDur" class="f-col"><option value="">Todas</option></select></th>
+              <th><input id="fCodigo" class="f-col" placeholder="Filtrar…"></th>
+              <th></th>
+              <th><input id="fTel" class="f-col" placeholder="Filtrar…"></th>
+              <th><select id="fDoctor" class="f-col"><option value="">Todos</option></select></th>
+              <th><select id="fEstado" class="f-col"><option value="">Todos</option></select></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="recTbody"></tbody>
+        </table>`;
+      rec_poblarFiltros();
     }
     function rec_opciones(sel, valores, etiqueta, fmt){
       const prev=sel.value;
@@ -359,16 +369,18 @@
     }
     function rec_poblarFiltros(){
       const docs=[...new Set(rec_rows.map(r=>r.doctor).filter(Boolean))].sort((a,b)=>String(a).localeCompare(b));
-      rec_opciones($('fDoctor'), docs, 'Doctor: todos');
+      rec_opciones($('fDoctor'), docs, 'Todos');
       const ests=[...new Set(rec_rows.map(r=>r.estado).filter(Boolean))];
-      rec_opciones($('fEstado'), ests, 'Estado: todos', e=>(REC_ESTADOS[e]&&REC_ESTADOS[e].label)||e);
+      rec_opciones($('fEstado'), ests, 'Todos', e=>(REC_ESTADOS[e]&&REC_ESTADOS[e].label)||e);
       const durs=[...new Set(rec_rows.map(r=>r.duracion).filter(v=>v!=null&&v!==''))].sort((a,b)=>a-b);
-      rec_opciones($('fDur'), durs, 'Duración: todas', d=>d+' min');
+      rec_opciones($('fDur'), durs, 'Todas', d=>d+' min');
     }
     function rec_aplicarFiltros(){
-      const fc=$('fCodigo').value.trim().toLowerCase();
-      const ft=$('fTel').value.replace(/\D/g,'');
-      const fd=$('fDoctor').value, fe=$('fEstado').value, fu=$('fDur').value;
+      const tb=$('recTbody'); if(!tb) return;
+      const g=(id)=>{ const el=$(id); return el?el.value:''; };
+      const fc=g('fCodigo').trim().toLowerCase();
+      const ft=g('fTel').replace(/\D/g,'');
+      const fd=g('fDoctor'), fe=g('fEstado'), fu=g('fDur');
       const filtradas=rec_rows.filter(r=>{
         if(fc && !rec_codigo(r.cita_id).toLowerCase().includes(fc)) return false;
         if(ft && !String(r.paciente_telefono||'').replace(/\D/g,'').includes(ft)) return false;
@@ -377,8 +389,10 @@
         if(fu && String(r.duracion)!==fu) return false;
         return true;
       });
-      rec_renderKpis(rec_rows);
-      rec_renderTabla(filtradas);
+      if(!filtradas.length){ tb.innerHTML='<tr><td colspan="8" class="vacio">No hay citas que mostrar.</td></tr>'; return; }
+      const cuenta={};
+      rec_rows.forEach(r=>{ const k=rec_codigo(r.cita_id); cuenta[k]=(cuenta[k]||0)+1; });
+      tb.innerHTML=filtradas.map(r=>rec_fila(r,cuenta)).join('');
     }
     function rec_renderKpis(rows){
       const c={confirmada:0,pendiente:0,enviado:0,cambio:0,no_asiste:0,sin_respuesta:0};
@@ -387,27 +401,20 @@
       $('recKpis').innerHTML = t.map(x=>`<div class="kpi ${x.cls}"><div class="n">${x.n}</div><div class="l">${esc(x.l)}</div></div>`).join('');
     }
     function rec_codigo(citaId){ return String(citaId||'').split('-')[0]; }
-    function rec_renderTabla(rows){
-      const cuerpo=$('recCuerpo');
-      if(!rows.length){ cuerpo.innerHTML='<div class="vacio">No hay citas que mostrar.</div>'; return; }
-      const cuenta={};
-      rec_rows.forEach(r=>{ const k=rec_codigo(r.cita_id); cuenta[k]=(cuenta[k]||0)+1; });
-      const filas=rows.map(r=>{
-        const hora=new Date(r.fecha_cita).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-        const dur = (r.duracion!=null&&r.duracion!=='') ? esc(r.duracion+' min') : '—';
-        const e=REC_ESTADOS[r.estado]||{label:r.estado,cls:'b-pendiente'};
-        const repe = cuenta[rec_codigo(r.cita_id)]>1 ? ` <span class="badge b-cambio">Repetida</span>` : '';
-        const sinTel = !r.paciente_telefono;
-        const tel = sinTel ? '<span class="warn">Sin teléfono</span>' : esc(r.paciente_telefono);
-        let env;
-        if(sinTel){ env=`<span class="tel">No (sin tel.)</span>`; }
-        else if(r.estado==='pendiente'){
-          const on = r.enviar!==false;
-          env=`<button class="btn-env ${on?'on':'off'}" data-act="env" data-id="${esc(r.cita_id)}" data-on="${on?1:0}">${on?'✓ Se enviará':'✕ No enviar'}</button>`;
-        } else { env='<span class="tel">—</span>'; }
-        return `<tr><td class="hora">${esc(hora)}</td><td class="num">${dur}</td><td class="codigo">${esc(rec_codigo(r.cita_id))}</td><td>${esc(r.paciente_nombre)}${repe}</td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td></tr>`;
-      }).join('');
-      cuerpo.innerHTML=`<table><thead><tr><th>Hora</th><th class="num">Dur.</th><th>Código</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Estado</th><th>Recordatorio</th></tr></thead><tbody>${filas}</tbody></table>`;
+    function rec_fila(r,cuenta){
+      const hora=new Date(r.fecha_cita).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      const dur = (r.duracion!=null&&r.duracion!=='') ? esc(r.duracion+' min') : '—';
+      const e=REC_ESTADOS[r.estado]||{label:r.estado,cls:'b-pendiente'};
+      const repe = cuenta[rec_codigo(r.cita_id)]>1 ? ` <span class="badge b-cambio">Repetida</span>` : '';
+      const sinTel = !r.paciente_telefono;
+      const tel = sinTel ? '<span class="warn">Sin teléfono</span>' : esc(r.paciente_telefono);
+      let env;
+      if(sinTel){ env=`<span class="tel">No (sin tel.)</span>`; }
+      else if(r.estado==='pendiente'){
+        const on = r.enviar!==false;
+        env=`<button class="btn-env ${on?'on':'off'}" data-act="env" data-id="${esc(r.cita_id)}" data-on="${on?1:0}">${on?'✓ Se enviará':'✕ No enviar'}</button>`;
+      } else { env='<span class="tel">—</span>'; }
+      return `<tr><td class="hora">${esc(hora)}</td><td class="num">${dur}</td><td class="codigo">${esc(rec_codigo(r.cita_id))}</td><td>${esc(r.paciente_nombre)}${repe}</td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td></tr>`;
     }
     async function rec_clicTabla(ev){
       const b=ev.target.closest('button[data-act="env"]'); if(!b) return;
@@ -415,7 +422,8 @@
       b.disabled=true;
       const { error } = await sb.from('recordatorios').update({ enviar: !on }).eq('cita_id', id);
       if(error){ b.disabled=false; alert('No se pudo cambiar el envío: '+(error.message||error)); return; }
-      rec_cargar();
+      const row=rec_rows.find(r=>r.cita_id===id); if(row) row.enviar=!on;
+      rec_aplicarFiltros();
     }
 
     // ---- Estadísticas (est_) ----
