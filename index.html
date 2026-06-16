@@ -146,8 +146,9 @@
       <section id="vistaTablero" class="vista activa">
         <div class="head">
           <div><p class="kicker">Recordatorios WhatsApp</p><h2>Tablero del día</h2></div>
-          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button></div>
+          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
         </div>
+        <div id="recProbarMsg" style="margin:0 0 14px;font-size:14px;line-height:1.4"></div>
         <div id="recKpis" class="kpis"></div>
         <div class="tabla-wrap"><div id="recCuerpo" class="scroll-x"></div></div>
       </section>
@@ -189,7 +190,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.4.1 — tablero + estadísticas + plantillas</footer>
+    <footer>Automatiza · v0.4.2 — tablero + estadísticas + plantillas + prueba</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -252,6 +253,27 @@
       $('recFecha').value = fechaStr(new Date());
       $('recFecha').addEventListener('change', rec_cargar);
       $('recRefrescar').addEventListener('click', rec_cargar);
+      $('recProbar').addEventListener('click', rec_probar);
+      rec_cargar();
+    }
+    async function rec_probar(){
+      const msg=$('recProbarMsg'), btn=$('recProbar');
+      if(!confirm('¿Enviar el recordatorio de prueba SOLO a la cita TEST-MOVIL (tu móvil)?\n\nSe enviará por WhatsApp DE VERDAD.')) return;
+      const txt=btn.textContent; btn.disabled=true; btn.textContent='Enviando…';
+      msg.style.color='var(--gris)'; msg.textContent='Enviando a TEST-MOVIL…';
+      try{
+        const { data, error } = await sb.functions.invoke('enviar-recordatorios', { body:{ solo_ids:['TEST-MOVIL'] } });
+        if(error){ msg.style.color='var(--rojo)'; msg.textContent='Error al llamar a la función: '+esc(error.message||String(error)); }
+        else if(data && data.dry_run){ msg.style.color='var(--ambar)'; msg.textContent='⚠ Salió en modo DRY-RUN (no se envió de verdad). Revisa que WA_TOKEN y WA_PHONE_ID estén puestos como secrets.'; }
+        else {
+          const r=(data && data.resultados && data.resultados[0])||null;
+          if(r && r.enviado){ msg.style.color='var(--verde)'; msg.textContent='✅ Enviado. Mira tu WhatsApp. (id: '+esc(r.wa_message_id||'')+')'; }
+          else if(r && r.error){ msg.style.color='var(--rojo)'; msg.textContent='❌ Meta devolvió un error: '+esc(JSON.stringify(r.error)); }
+          else if(data && data.total===0){ msg.style.color='var(--rojo)'; msg.textContent='No se encontró ninguna cita pendiente con cita_id TEST-MOVIL. Revisa que existe y está en estado "pendiente".'; }
+          else { msg.style.color='var(--gris)'; msg.textContent='Respuesta: '+esc(JSON.stringify(data)); }
+        }
+      }catch(e){ msg.style.color='var(--rojo)'; msg.textContent='Error inesperado: '+esc(String(e)); }
+      btn.disabled=false; btn.textContent=txt;
       rec_cargar();
     }
     async function rec_cargar(){
