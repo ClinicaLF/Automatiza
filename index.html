@@ -189,7 +189,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.4.0 — tablero + estadísticas + plantillas</footer>
+    <footer>Automatiza · v0.4.1 — tablero + estadísticas + plantillas</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -343,7 +343,7 @@
       $('plaLista').innerHTML='';
       pla_meta={};
       try {
-        const { data, error } = await sb.functions.invoke('plantillas', { body:{ accion:'listar' } });
+        const { data, error } = await sb.functions.invoke('plantillas-', { body:{ accion:'listar' } });
         if (error) { $('plaNotice').innerHTML='<span class="warn">No se pudo consultar Meta todavía.</span>'; }
         else if (data && data.configurado===false) {
           $('plaNotice').innerHTML='<span class="warn">Meta aún no está conectado. Puedes preparar y editar el texto aquí abajo; cuando conectemos Meta, "Enviar a revisión" creará o actualizará las plantillas de verdad.</span>';
@@ -383,7 +383,7 @@
         ? { accion:'editar', id:ex.id, bodyText, botones, ejemplo:PLA_EJEMPLO, category:'UTILITY' }
         : { accion:'crear', name:def.name, language:'es', category:'UTILITY', bodyText, botones, ejemplo:PLA_EJEMPLO };
       try {
-        const { data, error } = await sb.functions.invoke('plantillas', { body:payload });
+        const { data, error } = await sb.functions.invoke('plantillas-', { body:payload });
         if (error) { $('plaResultado').innerHTML='<span class="warn">Error al enviar a Meta.</span>'; return; }
         if (data && data.configurado===false) { $('plaResultado').innerHTML='<span class="warn">Meta no está conectado todavía, no se ha enviado nada.</span>'; return; }
         if (data && data.ok) { $('plaResultado').innerHTML='<span class="okmsg">Enviada a revisión. Meta suele responder en minutos. Pulsa Actualizar para ver el estado.</span>'; pla_cargar(); }
