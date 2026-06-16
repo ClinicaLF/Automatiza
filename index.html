@@ -11,12 +11,11 @@
       --verde:#8FB800; --rojo:#C0392B; --ambar:#B07B2A;
       --radio:10px; --sombra:0 1px 3px rgba(51,63,72,.08), 0 8px 24px rgba(51,63,72,.06);
     }
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box; }
     body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--azul); background:var(--sand); -webkit-font-smoothing:antialiased; }
     h1,h2 { font-family:Georgia,"Times New Roman",serif; }
     button { font-family:inherit; cursor:pointer; }
 
-    /* Login */
     #login { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
     .login-card { width:100%; max-width:380px; background:var(--blanco); border-radius:var(--radio); box-shadow:var(--sombra); padding:36px 32px 32px; border-top:3px solid var(--madera); }
     .login-card .kicker { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--madera); font-weight:700; margin:0 0 6px; }
@@ -24,15 +23,14 @@
     .login-card .sub { margin:0 0 26px; color:var(--gris); font-size:13.5px; }
     .campo { margin-bottom:16px; }
     .campo label { display:block; font-size:13px; font-weight:600; color:var(--azul-medio); margin-bottom:6px; }
-    .campo input { width:100%; padding:11px 12px; font-size:15px; border:1px solid var(--gris-claro); border-radius:8px; background:#fff; color:var(--azul); transition:border-color .15s,box-shadow .15s; }
+    .campo input { width:100%; padding:11px 12px; font-size:15px; border:1px solid var(--gris-claro); border-radius:8px; background:#fff; color:var(--azul); }
     .campo input:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
-    .btn-primario { width:100%; padding:12px; font-size:15px; font-weight:600; color:#fff; background:var(--azul); border:none; border-radius:8px; margin-top:6px; transition:background .15s; }
+    .btn-primario { width:100%; padding:12px; font-size:15px; font-weight:600; color:#fff; background:var(--azul); border:none; border-radius:8px; margin-top:6px; }
     .btn-primario:hover { background:#2a343b; }
     .btn-primario:disabled { opacity:.55; cursor:default; }
     .aviso { margin-top:14px; font-size:13px; padding:10px 12px; border-radius:8px; display:none; }
     .aviso.error { display:block; background:#fbeae8; color:var(--rojo); }
 
-    /* App */
     #app { display:none; min-height:100vh; flex-direction:column; }
     .topbar { background:var(--azul); color:#fff; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; }
     .topbar .marca { display:flex; flex-direction:column; line-height:1.2; }
@@ -42,8 +40,7 @@
     .btn-salir { background:transparent; border:1px solid #5A6770; color:#dfe4e7; padding:6px 12px; border-radius:7px; font-size:13px; }
     .btn-salir:hover { background:#3d4953; }
 
-    /* Nav tabs */
-    .nav { background:#2c363e; padding:0 22px; display:flex; gap:4px; }
+    .nav { background:#2c363e; padding:0 22px; display:flex; gap:4px; flex-wrap:wrap; }
     .nav button { background:transparent; border:none; color:#aab3ba; padding:13px 18px; font-size:14px; font-weight:600; border-bottom:3px solid transparent; }
     .nav button:hover { color:#fff; }
     .nav button.activo { color:#fff; border-bottom-color:var(--madera); }
@@ -52,7 +49,6 @@
     .vista { display:none; }
     .vista.activa { display:block; }
 
-    /* Cabecera de cada vista */
     .head { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:20px; }
     .head .kicker { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--madera); font-weight:700; margin:0 0 4px; }
     .head h2 { margin:0; font-size:24px; color:var(--azul); }
@@ -95,14 +91,32 @@
     .seccion-titulo { font-size:13px; font-weight:700; color:var(--azul-medio); text-transform:uppercase; letter-spacing:.06em; margin:26px 0 12px; }
     .vacio, .cargando, .error-box { padding:40px; text-align:center; color:var(--gris); font-size:14.5px; }
     .error-box { color:var(--rojo); }
-    footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
 
-    @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} }
+    /* Plantillas */
+    .notice { background:#fff; border-left:3px solid var(--ambar); border-radius:var(--radio); box-shadow:var(--sombra); padding:14px 18px; font-size:13.5px; color:var(--azul-medio); margin-bottom:18px; line-height:1.5; }
+    .notice:empty { display:none; }
+    .warn { color:var(--ambar); }
+    .okmsg { color:#5a7000; }
+    .editor { background:#fff; border-radius:var(--radio); box-shadow:var(--sombra); padding:24px; }
+    .pla-sel { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    .pla-sel button { background:var(--sand-2); border:1px solid var(--gris-claro); color:var(--azul-medio); padding:8px 16px; border-radius:8px; font-size:14px; font-weight:600; }
+    .pla-sel button.activo { background:var(--azul); color:#fff; border-color:var(--azul); }
+    .sub-est { font-size:12.5px; color:var(--gris); margin:0 0 16px; }
+    .lbl { display:block; font-size:13px; font-weight:600; color:var(--azul-medio); margin:14px 0 6px; }
+    .ayuda { font-size:12px; color:var(--gris); margin:4px 0 8px; line-height:1.5; }
+    textarea { width:100%; padding:11px 12px; font-size:14px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); font-family:inherit; resize:vertical; }
+    textarea:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .botones-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .botones-grid input { padding:9px 10px; font-size:14px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); }
+    .botones-grid input:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .resultado { margin-top:14px; font-size:13.5px; line-height:1.5; }
+
+    footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
+    @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN -->
   <section id="login">
     <div class="login-card">
       <p class="kicker">Centro Odontológico</p>
@@ -115,7 +129,6 @@
     </div>
   </section>
 
-  <!-- APP -->
   <div id="app">
     <header class="topbar">
       <div class="marca"><strong>Automatiza</strong><span>Centro Odontológico Laura Fernández</span></div>
@@ -125,41 +138,58 @@
     <nav class="nav">
       <button id="navTablero" class="activo">Tablero del día</button>
       <button id="navEstadisticas">Estadísticas</button>
+      <button id="navPlantillas">Plantillas</button>
     </nav>
 
     <main class="contenido">
 
-      <!-- VISTA: TABLERO -->
       <section id="vistaTablero" class="vista activa">
         <div class="head">
           <div><p class="kicker">Recordatorios WhatsApp</p><h2>Tablero del día</h2></div>
-          <div class="controls">
-            <input id="recFecha" type="date">
-            <button id="recRefrescar" class="btn-sec">Actualizar</button>
-          </div>
+          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button></div>
         </div>
         <div id="recKpis" class="kpis"></div>
         <div class="tabla-wrap"><div id="recCuerpo" class="scroll-x"></div></div>
       </section>
 
-      <!-- VISTA: ESTADÍSTICAS -->
       <section id="vistaEstadisticas" class="vista">
         <div class="head">
           <div><p class="kicker">Análisis</p><h2>Estadísticas</h2></div>
-          <div class="controls">
-            <label>Desde</label><input id="estDesde" type="date">
-            <label>Hasta</label><input id="estHasta" type="date">
-            <button id="estRefrescar" class="btn-sec">Actualizar</button>
-          </div>
+          <div class="controls"><label>Desde</label><input id="estDesde" type="date"><label>Hasta</label><input id="estHasta" type="date"><button id="estRefrescar" class="btn-sec">Actualizar</button></div>
         </div>
         <div id="estKpis" class="kpis"></div>
         <div class="seccion-titulo">Por doctor</div>
         <div class="tabla-wrap"><div id="estDoctores" class="scroll-x"></div></div>
       </section>
 
+      <section id="vistaPlantillas" class="vista">
+        <div class="head">
+          <div><p class="kicker">WhatsApp</p><h2>Plantillas</h2></div>
+          <div class="controls"><button id="plaRefrescar" class="btn-sec">Actualizar</button></div>
+        </div>
+        <div id="plaNotice" class="notice"></div>
+        <div class="tabla-wrap" style="margin-bottom:22px"><div id="plaLista" class="scroll-x"></div></div>
+
+        <div class="editor">
+          <div class="pla-sel">
+            <button id="plaSelPrimer" class="activo">Primer aviso</button>
+            <button id="plaSelSegundo">Segundo aviso</button>
+          </div>
+          <p id="plaEstadoActual" class="sub-est"></p>
+          <label class="lbl">Texto del mensaje</label>
+          <p class="ayuda">Variables disponibles: {{1}} nombre · {{2}} fecha · {{3}} hora · {{4}} doctor. Importante: no pongas una variable justo al principio ni al final del texto (Meta lo rechaza).</p>
+          <textarea id="plaBody" rows="4"></textarea>
+          <label class="lbl">Botones de respuesta rápida</label>
+          <div class="botones-grid"><input id="plaBtn1"><input id="plaBtn2"><input id="plaBtn3"></div>
+          <p class="ayuda">El webhook reconoce las respuestas por palabras clave: mantén que los botones contengan "confirm", "cambi" y "no podré / no asist", o el cambio de estado no funcionará.</p>
+          <button id="plaEnviar" class="btn-primario" style="max-width:280px">Enviar a revisión a Meta</button>
+          <div id="plaResultado" class="resultado"></div>
+        </div>
+      </section>
+
     </main>
 
-    <footer>Automatiza · v0.3.0 — tablero + estadísticas</footer>
+    <footer>Automatiza · v0.4.0 — tablero + estadísticas + plantillas</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -171,28 +201,20 @@
     const $ = (id) => document.getElementById(id);
     const esc = (s) => (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const pct = (n,d) => d>0 ? Math.round((n/d)*100) : 0;
+    const cap = (s) => s.charAt(0).toUpperCase()+s.slice(1);
 
     const REC_ESTADOS = {
-      pendiente:{label:'Pendiente',cls:'b-pendiente'},
-      enviado:{label:'Enviado',cls:'b-enviado'},
-      confirmada:{label:'Confirmada',cls:'b-confirmada'},
-      cambio:{label:'Quiere cambiar',cls:'b-cambio'},
-      no_asiste:{label:'No asiste',cls:'b-no_asiste'},
-      sin_respuesta:{label:'Sin respuesta',cls:'b-sin_respuesta'}
+      pendiente:{label:'Pendiente',cls:'b-pendiente'}, enviado:{label:'Enviado',cls:'b-enviado'},
+      confirmada:{label:'Confirmada',cls:'b-confirmada'}, cambio:{label:'Quiere cambiar',cls:'b-cambio'},
+      no_asiste:{label:'No asiste',cls:'b-no_asiste'}, sin_respuesta:{label:'Sin respuesta',cls:'b-sin_respuesta'}
     };
 
     function fechaStr(d){ const p=(n)=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
-    function dayBounds(dStr){ const [y,m,d]=dStr.split('-').map(Number); return { startISO:new Date(y,m-1,d,0,0,0,0).toISOString() }; }
-    function rangeBounds(desde,hasta){
-      const [y1,m1,d1]=desde.split('-').map(Number);
-      const [y2,m2,d2]=hasta.split('-').map(Number);
-      return { startISO:new Date(y1,m1-1,d1,0,0,0,0).toISOString(), endISO:new Date(y2,m2-1,d2+1,0,0,0,0).toISOString() };
-    }
+    function rangeBounds(desde,hasta){ const [y1,m1,d1]=desde.split('-').map(Number); const [y2,m2,d2]=hasta.split('-').map(Number); return { startISO:new Date(y1,m1-1,d1,0,0,0,0).toISOString(), endISO:new Date(y2,m2-1,d2+1,0,0,0,0).toISOString() }; }
     function dayBoundsFull(dStr){ const [y,m,d]=dStr.split('-').map(Number); return { startISO:new Date(y,m-1,d,0,0,0,0).toISOString(), endISO:new Date(y,m-1,d+1,0,0,0,0).toISOString() }; }
 
     let app_iniciado = false;
 
-    // ---- Sesión ----
     function app_render(session){
       if (session && session.user){
         $('login').style.display='none'; $('app').style.display='flex';
@@ -211,23 +233,21 @@
     }
     async function auth_logout(){ await sb.auth.signOut(); }
 
-    // ---- Navegación entre vistas ----
     function app_initVistas(){
       $('navTablero').addEventListener('click', ()=>app_verVista('tablero'));
       $('navEstadisticas').addEventListener('click', ()=>app_verVista('estadisticas'));
-      rec_init();
-      est_init();
+      $('navPlantillas').addEventListener('click', ()=>app_verVista('plantillas'));
+      rec_init(); est_init(); pla_init();
       app_verVista('tablero');
     }
     function app_verVista(cual){
-      const esTab = cual==='tablero';
-      $('vistaTablero').classList.toggle('activa', esTab);
-      $('vistaEstadisticas').classList.toggle('activa', !esTab);
-      $('navTablero').classList.toggle('activo', esTab);
-      $('navEstadisticas').classList.toggle('activo', !esTab);
+      ['tablero','estadisticas','plantillas'].forEach(v=>{
+        $('vista'+cap(v)).classList.toggle('activa', v===cual);
+        $('nav'+cap(v)).classList.toggle('activo', v===cual);
+      });
     }
 
-    // ---- Tablero diario (rec_) ----
+    // ---- Tablero (rec_) ----
     function rec_init(){
       $('recFecha').value = fechaStr(new Date());
       $('recFecha').addEventListener('change', rec_cargar);
@@ -239,21 +259,14 @@
       cuerpo.innerHTML='<div class="cargando">Cargando citas…</div>'; kpis.innerHTML='';
       const { startISO, endISO } = dayBoundsFull($('recFecha').value);
       const { data, error } = await sb.from('recordatorios').select('*').gte('fecha_cita',startISO).lt('fecha_cita',endISO).order('fecha_cita',{ascending:true});
-      if(error){ cuerpo.innerHTML='<div class="error-box">No se pudieron cargar las citas. Reintenta con Actualizar.</div>'; return; }
+      if(error){ cuerpo.innerHTML='<div class="error-box">No se pudieron cargar las citas.</div>'; return; }
       rec_renderKpis(data||[]); rec_renderTabla(data||[]);
     }
     function rec_renderKpis(rows){
       const c={confirmada:0,pendiente:0,enviado:0,cambio:0,no_asiste:0,sin_respuesta:0};
       rows.forEach(r=>{ if(c[r.estado]!=null) c[r.estado]++; });
-      const tarjetas=[
-        {n:rows.length,l:'Citas',cls:''},
-        {n:c.confirmada,l:'Confirmadas',cls:'verde'},
-        {n:c.pendiente+c.enviado,l:'Sin responder',cls:'azul'},
-        {n:c.cambio,l:'Cambios',cls:'ambar'},
-        {n:c.no_asiste,l:'No asisten',cls:'rojo'},
-        {n:c.sin_respuesta,l:'Sin respuesta',cls:''}
-      ];
-      $('recKpis').innerHTML = tarjetas.map(t=>`<div class="kpi ${t.cls}"><div class="n">${t.n}</div><div class="l">${esc(t.l)}</div></div>`).join('');
+      const t=[{n:rows.length,l:'Citas',cls:''},{n:c.confirmada,l:'Confirmadas',cls:'verde'},{n:c.pendiente+c.enviado,l:'Sin responder',cls:'azul'},{n:c.cambio,l:'Cambios',cls:'ambar'},{n:c.no_asiste,l:'No asisten',cls:'rojo'},{n:c.sin_respuesta,l:'Sin respuesta',cls:''}];
+      $('recKpis').innerHTML = t.map(x=>`<div class="kpi ${x.cls}"><div class="n">${x.n}</div><div class="l">${esc(x.l)}</div></div>`).join('');
     }
     function rec_renderTabla(rows){
       const cuerpo=$('recCuerpo');
@@ -268,10 +281,8 @@
 
     // ---- Estadísticas (est_) ----
     function est_init(){
-      const hoy=new Date();
-      const desde=new Date(); desde.setDate(hoy.getDate()-29);
-      $('estHasta').value=fechaStr(hoy);
-      $('estDesde').value=fechaStr(desde);
+      const hoy=new Date(); const desde=new Date(); desde.setDate(hoy.getDate()-29);
+      $('estHasta').value=fechaStr(hoy); $('estDesde').value=fechaStr(desde);
       $('estRefrescar').addEventListener('click', est_cargar);
     }
     async function est_cargar(){
@@ -286,45 +297,98 @@
       const total=rows.length;
       const c={confirmada:0,cambio:0,no_asiste:0,sin_respuesta:0,pendiente:0,enviado:0};
       rows.forEach(r=>{ if(c[r.estado]!=null) c[r.estado]++; });
-      // "con aviso" = se les llegó a mandar el 1er aviso
-      const conAviso = rows.filter(r=>r.enviado_at).length;
-      const respondidas = c.confirmada + c.cambio + c.no_asiste;
-      // tiempo medio de respuesta (enviado_at -> respondido_at) en horas
-      let sumaH=0, nH=0;
-      rows.forEach(r=>{ if(r.enviado_at && r.respondido_at){ const h=(new Date(r.respondido_at)-new Date(r.enviado_at))/3600000; if(h>=0){ sumaH+=h; nH++; } } });
-      const medioH = nH>0 ? (sumaH/nH) : null;
-      const medioTxt = medioH==null ? '—' : (medioH<1 ? Math.round(medioH*60)+' min' : medioH.toFixed(1)+' h');
-
-      const tarjetas=[
-        {n:total, l:'Citas con recordatorio', cls:'', sub:`${conAviso} con aviso enviado`},
-        {n:pct(c.confirmada,conAviso)+'%', l:'Tasa de confirmación', cls:'verde', sub:`${c.confirmada} confirmadas`},
-        {n:pct(respondidas,conAviso)+'%', l:'Tasa de respuesta', cls:'azul', sub:`${respondidas} respondieron`},
-        {n:pct(c.cambio,conAviso)+'%', l:'Piden cambio', cls:'ambar', sub:`${c.cambio} citas`},
-        {n:pct(c.no_asiste,conAviso)+'%', l:'No asisten', cls:'rojo', sub:`${c.no_asiste} citas`},
-        {n:pct(c.sin_respuesta,conAviso)+'%', l:'Sin respuesta', cls:'', sub:`${c.sin_respuesta} citas`},
-        {n:medioTxt, l:'Tiempo medio de respuesta', cls:'', sub:`sobre ${nH} respuestas`}
+      const conAviso=rows.filter(r=>r.enviado_at).length;
+      const respondidas=c.confirmada+c.cambio+c.no_asiste;
+      let sumaH=0,nH=0;
+      rows.forEach(r=>{ if(r.enviado_at&&r.respondido_at){ const h=(new Date(r.respondido_at)-new Date(r.enviado_at))/3600000; if(h>=0){ sumaH+=h; nH++; } } });
+      const medioH=nH>0?sumaH/nH:null;
+      const medioTxt=medioH==null?'—':(medioH<1?Math.round(medioH*60)+' min':medioH.toFixed(1)+' h');
+      const t=[
+        {n:total,l:'Citas con recordatorio',cls:'',sub:`${conAviso} con aviso enviado`},
+        {n:pct(c.confirmada,conAviso)+'%',l:'Tasa de confirmación',cls:'verde',sub:`${c.confirmada} confirmadas`},
+        {n:pct(respondidas,conAviso)+'%',l:'Tasa de respuesta',cls:'azul',sub:`${respondidas} respondieron`},
+        {n:pct(c.cambio,conAviso)+'%',l:'Piden cambio',cls:'ambar',sub:`${c.cambio} citas`},
+        {n:pct(c.no_asiste,conAviso)+'%',l:'No asisten',cls:'rojo',sub:`${c.no_asiste} citas`},
+        {n:pct(c.sin_respuesta,conAviso)+'%',l:'Sin respuesta',cls:'',sub:`${c.sin_respuesta} citas`},
+        {n:medioTxt,l:'Tiempo medio de respuesta',cls:'',sub:`sobre ${nH} respuestas`}
       ];
-      $('estKpis').innerHTML = tarjetas.map(t=>`<div class="kpi ${t.cls}"><div class="n">${esc(t.n)}</div><div class="l">${esc(t.l)}</div><div class="sub">${esc(t.sub)}</div></div>`).join('');
+      $('estKpis').innerHTML = t.map(x=>`<div class="kpi ${x.cls}"><div class="n">${esc(x.n)}</div><div class="l">${esc(x.l)}</div><div class="sub">${esc(x.sub)}</div></div>`).join('');
 
-      // Por doctor
       const porDoc={};
-      rows.forEach(r=>{
-        const d=r.doctor||'—';
-        if(!porDoc[d]) porDoc[d]={citas:0,conAviso:0,confirmada:0,no_asiste:0,sin_respuesta:0};
-        porDoc[d].citas++;
-        if(r.enviado_at) porDoc[d].conAviso++;
-        if(r.estado==='confirmada') porDoc[d].confirmada++;
-        if(r.estado==='no_asiste') porDoc[d].no_asiste++;
-        if(r.estado==='sin_respuesta') porDoc[d].sin_respuesta++;
-      });
-      const docs=$('estDoctores');
+      rows.forEach(r=>{ const d=r.doctor||'—'; if(!porDoc[d]) porDoc[d]={citas:0,conAviso:0,confirmada:0,no_asiste:0,sin_respuesta:0}; porDoc[d].citas++; if(r.enviado_at) porDoc[d].conAviso++; if(r.estado==='confirmada') porDoc[d].confirmada++; if(r.estado==='no_asiste') porDoc[d].no_asiste++; if(r.estado==='sin_respuesta') porDoc[d].sin_respuesta++; });
       const claves=Object.keys(porDoc).sort((a,b)=>porDoc[b].citas-porDoc[a].citas);
-      if(!claves.length){ docs.innerHTML='<div class="vacio">No hay datos en este rango.</div>'; return; }
-      const filas=claves.map(d=>{
-        const x=porDoc[d];
-        return `<tr><td>${esc(d)}</td><td class="num">${x.citas}</td><td class="num">${x.confirmada}</td><td class="num">${pct(x.confirmada,x.conAviso)}%</td><td class="num">${x.no_asiste}</td><td class="num">${x.sin_respuesta}</td></tr>`;
-      }).join('');
-      docs.innerHTML=`<table><thead><tr><th>Doctor</th><th class="num">Citas</th><th class="num">Confirm.</th><th class="num">% Confirm.</th><th class="num">No asisten</th><th class="num">Sin resp.</th></tr></thead><tbody>${filas}</tbody></table>`;
+      if(!claves.length){ $('estDoctores').innerHTML='<div class="vacio">No hay datos en este rango.</div>'; return; }
+      const filas=claves.map(d=>{ const x=porDoc[d]; return `<tr><td>${esc(d)}</td><td class="num">${x.citas}</td><td class="num">${x.confirmada}</td><td class="num">${pct(x.confirmada,x.conAviso)}%</td><td class="num">${x.no_asiste}</td><td class="num">${x.sin_respuesta}</td></tr>`; }).join('');
+      $('estDoctores').innerHTML=`<table><thead><tr><th>Doctor</th><th class="num">Citas</th><th class="num">Confirm.</th><th class="num">% Confirm.</th><th class="num">No asisten</th><th class="num">Sin resp.</th></tr></thead><tbody>${filas}</tbody></table>`;
+    }
+
+    // ---- Plantillas (pla_) ----
+    const PLA_DEFS = {
+      primer:  { name:"recordatorio_cita",   titulo:"Primer aviso",  body:"Hola {{1}}, le recordamos su cita en el Centro Odontológico Laura Fernández el {{2}} a las {{3}} con {{4}}. Por favor, confírmenos si podrá asistir.", botones:["Confirmar","Necesito cambiarla","No podré asistir"] },
+      segundo: { name:"recordatorio_cita_2", titulo:"Segundo aviso", body:"Hola {{1}}, aún no hemos recibido su confirmación para la cita del {{2}} a las {{3}} con {{4}}. ¿Podrá acudir? Gracias.", botones:["Confirmar","Necesito cambiarla","No podré asistir"] }
+    };
+    const PLA_EJEMPLO = ["Carmen","16/06/2026","09:30","Dra. Fernández"];
+    let pla_meta = {};
+    let pla_actual = 'primer';
+
+    function pla_init(){
+      $('plaSelPrimer').addEventListener('click', ()=>pla_seleccionar('primer'));
+      $('plaSelSegundo').addEventListener('click', ()=>pla_seleccionar('segundo'));
+      $('plaRefrescar').addEventListener('click', pla_cargar);
+      $('plaEnviar').addEventListener('click', pla_guardar);
+      pla_cargar();
+    }
+    async function pla_cargar(){
+      $('plaNotice').textContent='Consultando Meta…';
+      $('plaLista').innerHTML='';
+      pla_meta={};
+      try {
+        const { data, error } = await sb.functions.invoke('plantillas', { body:{ accion:'listar' } });
+        if (error) { $('plaNotice').innerHTML='<span class="warn">No se pudo consultar Meta todavía.</span>'; }
+        else if (data && data.configurado===false) {
+          $('plaNotice').innerHTML='<span class="warn">Meta aún no está conectado. Puedes preparar y editar el texto aquí abajo; cuando conectemos Meta, "Enviar a revisión" creará o actualizará las plantillas de verdad.</span>';
+        } else if (data && data.plantillas) {
+          (data.plantillas||[]).forEach(p=>{ pla_meta[p.name]=p; });
+          pla_renderLista(data.plantillas||[]);
+          $('plaNotice').textContent='';
+        } else { $('plaNotice').innerHTML='<span class="warn">Respuesta inesperada de la función.</span>'; }
+      } catch(e){ $('plaNotice').innerHTML='<span class="warn">Meta aún no está conectado.</span>'; }
+      pla_seleccionar(pla_actual);
+    }
+    function pla_renderLista(lista){
+      if(!lista.length){ $('plaLista').innerHTML='<div class="vacio">Aún no hay plantillas creadas en Meta.</div>'; return; }
+      const badge=(s)=>{ const m={APPROVED:['Aprobada','b-confirmada'],PENDING:['En revisión','b-enviado'],REJECTED:['Rechazada','b-no_asiste']}; const it=m[s]||[s,'b-pendiente']; return `<span class="badge ${it[1]}">${esc(it[0])}</span>`; };
+      $('plaLista').innerHTML=`<table><thead><tr><th>Plantilla</th><th>Idioma</th><th>Categoría</th><th>Estado</th></tr></thead><tbody>${lista.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.language)}</td><td>${esc(p.category)}</td><td>${badge(p.status)}</td></tr>`).join('')}</tbody></table>`;
+    }
+    function pla_seleccionar(cual){
+      pla_actual=cual;
+      $('plaSelPrimer').classList.toggle('activo', cual==='primer');
+      $('plaSelSegundo').classList.toggle('activo', cual==='segundo');
+      const def=PLA_DEFS[cual];
+      const ex=pla_meta[def.name];
+      $('plaBody').value = ex ? ex.bodyText : def.body;
+      const bts = (ex && ex.botones && ex.botones.length) ? ex.botones : def.botones;
+      $('plaBtn1').value=bts[0]||''; $('plaBtn2').value=bts[1]||''; $('plaBtn3').value=bts[2]||'';
+      $('plaResultado').textContent='';
+      $('plaEstadoActual').innerHTML = ex ? `En Meta: <strong>${esc(ex.status)}</strong> · nombre <code>${esc(def.name)}</code>` : `Aún no creada en Meta · nombre <code>${esc(def.name)}</code>`;
+    }
+    async function pla_guardar(){
+      const def=PLA_DEFS[pla_actual];
+      const ex=pla_meta[def.name];
+      const bodyText=$('plaBody').value.trim();
+      const botones=[$('plaBtn1').value.trim(),$('plaBtn2').value.trim(),$('plaBtn3').value.trim()].filter(Boolean);
+      if(!bodyText){ $('plaResultado').innerHTML='<span class="warn">El texto no puede estar vacío.</span>'; return; }
+      $('plaResultado').textContent='Enviando a Meta…';
+      const payload = ex
+        ? { accion:'editar', id:ex.id, bodyText, botones, ejemplo:PLA_EJEMPLO, category:'UTILITY' }
+        : { accion:'crear', name:def.name, language:'es', category:'UTILITY', bodyText, botones, ejemplo:PLA_EJEMPLO };
+      try {
+        const { data, error } = await sb.functions.invoke('plantillas', { body:payload });
+        if (error) { $('plaResultado').innerHTML='<span class="warn">Error al enviar a Meta.</span>'; return; }
+        if (data && data.configurado===false) { $('plaResultado').innerHTML='<span class="warn">Meta no está conectado todavía, no se ha enviado nada.</span>'; return; }
+        if (data && data.ok) { $('plaResultado').innerHTML='<span class="okmsg">Enviada a revisión. Meta suele responder en minutos. Pulsa Actualizar para ver el estado.</span>'; pla_cargar(); }
+        else { $('plaResultado').innerHTML='<span class="warn">Meta devolvió un error: '+esc(JSON.stringify(data&&(data.resultado||data.error)||data))+'</span>'; }
+      } catch(e){ $('plaResultado').innerHTML='<span class="warn">No se pudo conectar con la función.</span>'; }
     }
 
     // ---- Arranque ----
