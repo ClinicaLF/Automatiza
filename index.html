@@ -110,6 +110,9 @@
     .botones-grid input { padding:9px 10px; font-size:14px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); }
     .botones-grid input:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
     .resultado { margin-top:14px; font-size:13.5px; line-height:1.5; }
+    .file-in { display:block; font-size:14px; color:var(--azul); padding:10px 0; }
+    .file-in::file-selector-button { font-family:inherit; font-size:14px; font-weight:600; color:var(--azul); background:var(--sand-2); border:1px solid var(--gris-claro); border-radius:8px; padding:9px 16px; margin-right:12px; cursor:pointer; }
+    .file-in::file-selector-button:hover { background:#e3dccd; }
 
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
     @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
@@ -137,6 +140,7 @@
 
     <nav class="nav">
       <button id="navTablero" class="activo">Tablero del día</button>
+      <button id="navImportar">Importar citas</button>
       <button id="navEstadisticas">Estadísticas</button>
       <button id="navPlantillas">Plantillas</button>
     </nav>
@@ -151,6 +155,23 @@
         <div id="recProbarMsg" style="margin:0 0 14px;font-size:14px;line-height:1.4"></div>
         <div id="recKpis" class="kpis"></div>
         <div class="tabla-wrap"><div id="recCuerpo" class="scroll-x"></div></div>
+      </section>
+
+      <section id="vistaImportar" class="vista">
+        <div class="head">
+          <div><p class="kicker">Recordatorios WhatsApp</p><h2>Importar citas</h2></div>
+        </div>
+        <div class="notice">
+          Exporta desde Odontonet el listado de citas <b>con teléfono</b> (mejor a Excel <code>.xlsx</code>) y súbelo aquí. La app limpia la hora y los acentos, descarta las anotaciones y las citas sin teléfono, y deja <b>un recordatorio por paciente y día</b>. Se crean como <b>pendiente</b>: no se envía ningún WhatsApp.
+        </div>
+        <div class="editor">
+          <label class="lbl">Archivo de citas (.xlsx, .csv o .txt)</label>
+          <input id="impFile" type="file" accept=".xlsx,.xls,.csv,.txt" class="file-in">
+          <div id="impResumen" class="resultado"></div>
+          <div id="impPreview" class="scroll-x" style="margin-top:14px"></div>
+          <button id="impConfirmar" class="btn-primario" style="max-width:280px;display:none;margin-top:16px">Importar citas</button>
+          <div id="impResultado" class="resultado"></div>
+        </div>
       </section>
 
       <section id="vistaEstadisticas" class="vista">
@@ -190,10 +211,11 @@
 
     </main>
 
-    <footer>Automatiza · v0.4.2 — tablero + estadísticas + plantillas + prueba</footer>
+    <footer>Automatiza · v0.5.0 — tablero + importar + estadísticas + plantillas + prueba</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     const SUPABASE_URL = 'https://hihkuxvfvvsjdwixapmm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_uJx2ddGxeXh7CSuJIr1CsQ_d16UOs9O';
@@ -236,13 +258,14 @@
 
     function app_initVistas(){
       $('navTablero').addEventListener('click', ()=>app_verVista('tablero'));
+      $('navImportar').addEventListener('click', ()=>app_verVista('importar'));
       $('navEstadisticas').addEventListener('click', ()=>app_verVista('estadisticas'));
       $('navPlantillas').addEventListener('click', ()=>app_verVista('plantillas'));
-      rec_init(); est_init(); pla_init();
+      rec_init(); imp_init(); est_init(); pla_init();
       app_verVista('tablero');
     }
     function app_verVista(cual){
-      ['tablero','estadisticas','plantillas'].forEach(v=>{
+      ['tablero','importar','estadisticas','plantillas'].forEach(v=>{
         $('vista'+cap(v)).classList.toggle('activa', v===cual);
         $('nav'+cap(v)).classList.toggle('activo', v===cual);
       });
@@ -411,6 +434,139 @@
         if (data && data.ok) { $('plaResultado').innerHTML='<span class="okmsg">Enviada a revisión. Meta suele responder en minutos. Pulsa Actualizar para ver el estado.</span>'; pla_cargar(); }
         else { $('plaResultado').innerHTML='<span class="warn">Meta devolvió un error: '+esc(JSON.stringify(data&&(data.resultado||data.error)||data))+'</span>'; }
       } catch(e){ $('plaResultado').innerHTML='<span class="warn">No se pudo conectar con la función.</span>'; }
+    }
+
+    // ---- Importar citas (imp_) ----
+    const IMP_AGENDA_DOCTOR = {
+      LF:'Laura Fernández', LC:'Laura Carrillo', LT:'Leti', MA:'Marina',
+      AG:'Ana', AL:'Alberto', CL:'Vázquez', CS:'Yolanda', CT:'Christopher',
+      CV:'Cristina', JA:'Javi', JN:'José Antonio Moreno Rodríguez', JO:'José',
+      MG:'Marta', MH:'Mar', MP:'Miriam', PA:'Pablo', PL:'Paula', YL:'Yolanda Collado'
+    };
+    const IMP_AGENDA_EXCLUIR = new Set(['Ta']); // Anotaciones: no son citas
+    let imp_preparadas = [];
+
+    function imp_init(){
+      $('impFile').addEventListener('change', imp_archivo);
+      $('impConfirmar').addEventListener('click', imp_confirmar);
+    }
+    function imp_reset(){
+      imp_preparadas=[]; $('impPreview').innerHTML=''; $('impResumen').innerHTML='';
+      $('impResultado').textContent=''; $('impConfirmar').style.display='none';
+    }
+    function imp_propio(s){
+      return String(s||'').toLowerCase().replace(/(^|[\s.\-'’])([a-záéíóúüñ])/g, (m,a,b)=>a+b.toUpperCase());
+    }
+    function imp_normTel(raw){
+      let d=String(raw==null?'':raw).replace(/\D/g,'');
+      if(!d) return '';
+      if(d.startsWith('0034')) d=d.slice(2);
+      if(d.length===9) d='34'+d;
+      return d;
+    }
+    const imp_telValido = (t)=>/^34[0-9]{9}$/.test(t);
+
+    async function imp_leerFilas(file){
+      const nombre=(file.name||'').toLowerCase();
+      const buf=await file.arrayBuffer();
+      if(nombre.endsWith('.xlsx')||nombre.endsWith('.xls')){
+        const wb=XLSX.read(buf,{type:'array'});
+        const hoja=wb.Sheets[wb.SheetNames[0]];
+        return XLSX.utils.sheet_to_json(hoja,{header:1,raw:false,defval:''});
+      }
+      const txt=new TextDecoder('windows-1252').decode(buf); // respeta Ñ y acentos
+      const sep = txt.indexOf('\t')>=0 ? '\t' : (txt.indexOf(';')>=0 ? ';' : ',');
+      return txt.split(/\r?\n/).filter(l=>l.trim()!=='').map(l=>l.split(sep));
+    }
+    async function imp_archivo(e){
+      imp_reset();
+      const file=e.target.files && e.target.files[0];
+      if(!file) return;
+      $('impResumen').innerHTML='Leyendo archivo…';
+      try{ imp_procesar(await imp_leerFilas(file)); }
+      catch(err){ $('impResumen').innerHTML='<span class="warn">No se pudo leer el archivo: '+esc(String(err&&err.message||err))+'</span>'; }
+    }
+    function imp_procesar(filas){
+      let nSinTel=0, nAnot=0, nMala=0;
+      const mapa={}; // cita_id -> cita más temprana
+      filas.forEach(cols=>{
+        if(!cols || cols.length<6) return;
+        const agenda=String(cols[0]||'').trim();
+        const fm=String(cols[1]||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        const hm=String(cols[2]||'').match(/(\d{1,2}):(\d{2})/);
+        const codigo=String(cols[4]||'').trim();
+        const nombre=String(cols[5]||'').trim();
+        const tel=imp_normTel(cols[cols.length-1]);
+        if(!fm || !hm) return;                      // cabecera o fila sin cita
+        if(!/^\d+$/.test(codigo)) return;
+        if(IMP_AGENDA_EXCLUIR.has(agenda)){ nAnot++; return; }
+        if(!tel){ nSinTel++; return; }
+        if(!imp_telValido(tel)){ nMala++; return; }
+        const dd=fm[1].padStart(2,'0'), mm=fm[2].padStart(2,'0'), yyyy=fm[3];
+        const HH=hm[1].padStart(2,'0'), MM=hm[2];
+        const minutos=parseInt(HH,10)*60+parseInt(MM,10);
+        const cita_id=`${codigo}-${yyyy}${mm}${dd}`;
+        const cita={
+          cita_id,
+          paciente_nombre:imp_propio(nombre),
+          paciente_telefono:tel,
+          doctor:IMP_AGENDA_DOCTOR[agenda]||'nuestro equipo',
+          fecha_cita:`${yyyy}-${mm}-${dd}T${HH}:${MM}:00+02:00`,
+          estado:'pendiente',
+          _min:minutos, _hora:`${HH}:${MM}`, _fecha:`${dd}/${mm}/${yyyy}`
+        };
+        if(!mapa[cita_id] || minutos<mapa[cita_id]._min) mapa[cita_id]=cita;
+      });
+      imp_preparadas=Object.values(mapa).sort((a,b)=> a.fecha_cita<b.fecha_cita?-1:1);
+      imp_render(nSinTel,nAnot,nMala);
+    }
+    function imp_render(nSinTel,nAnot,nMala){
+      const n=imp_preparadas.length;
+      const partes=[];
+      if(nAnot)   partes.push(`${nAnot} anotaciones`);
+      if(nSinTel) partes.push(`${nSinTel} sin teléfono`);
+      if(nMala)   partes.push(`${nMala} con teléfono no válido`);
+      const excl = partes.length ? ` · Excluidas: ${partes.join(', ')}.` : '';
+      if(!n){ $('impResumen').innerHTML=`<span class="warn">No se ha encontrado ninguna cita válida en el archivo.${excl}</span>`; return; }
+      const fechas=[...new Set(imp_preparadas.map(c=>c._fecha))];
+      $('impResumen').innerHTML=`<strong>${n}</strong> citas listas para importar (${esc(fechas.join(', '))}).${excl}`
+        +`<span class="ayuda" style="display:block;margin-top:6px">Revisa la lista y pulsa “Importar citas”. Solo se crean como <b>pendiente</b>; no se envía ningún WhatsApp.</span>`;
+      const filas=imp_preparadas.map(c=>`<tr><td>${esc(c._fecha)}</td><td class="hora">${esc(c._hora)}</td><td>${esc(c.paciente_nombre)}</td><td class="tel">${esc(c.paciente_telefono)}</td><td>${esc(c.doctor)}</td></tr>`).join('');
+      $('impPreview').innerHTML=`<div class="tabla-wrap"><table><thead><tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Profesional</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+      $('impConfirmar').style.display='';
+    }
+    async function imp_confirmar(){
+      if(!imp_preparadas.length) return;
+      const btn=$('impConfirmar'), res=$('impResultado');
+      btn.disabled=true; const txt=btn.textContent; btn.textContent='Importando…';
+      res.style.color='var(--gris)'; res.textContent='Comprobando duplicados…';
+      const limpias=imp_preparadas.map(({_min,_hora,_fecha,...c})=>c);
+      const ids=limpias.map(c=>c.cita_id);
+      try{
+        const q=await sb.from('recordatorios').select('cita_id').in('cita_id', ids);
+        if(q.error) throw q.error;
+        const existen=new Set((q.data||[]).map(r=>r.cita_id));
+        const nuevas=limpias.filter(c=>!existen.has(c.cita_id));
+        if(!nuevas.length){
+          res.style.color='var(--ambar)';
+          res.innerHTML=`Las ${limpias.length} citas ya estaban importadas. No se ha añadido ninguna nueva.`;
+          btn.disabled=false; btn.textContent=txt; return;
+        }
+        res.textContent='Guardando '+nuevas.length+' citas…';
+        const ins=await sb.from('recordatorios').insert(nuevas);
+        if(ins.error) throw ins.error;
+        const yaHabia=limpias.length-nuevas.length;
+        res.style.color='var(--verde)';
+        res.innerHTML=`✅ Importadas <strong>${nuevas.length}</strong> citas nuevas`+(yaHabia>0?` · ${yaHabia} ya estaban (no se tocan)`:'')+`.`
+          +`<span class="ayuda" style="display:block;margin-top:4px">Ya las puedes ver en el “Tablero del día”.</span>`;
+        $('impConfirmar').style.display='none'; $('impFile').value=''; imp_preparadas=[];
+      }catch(e){
+        const m=(e&&(e.message||e.hint||e.details))||String(e);
+        res.style.color='var(--rojo)';
+        res.innerHTML='No se pudieron guardar: '+esc(m)
+          +`<span class="ayuda" style="display:block;margin-top:4px">Si menciona permisos o “row-level security”, ejecuta una vez el SQL que te paso (lo arregla).</span>`;
+      }
+      btn.disabled=false; btn.textContent=txt;
     }
 
     // ---- Arranque ----
