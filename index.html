@@ -130,6 +130,15 @@
     .f-col { width:100%; min-width:90px; padding:6px 8px; font-size:12.5px; font-weight:400; border:1px solid var(--gris-claro); border-radius:7px; color:var(--azul); background:#fff; text-transform:none; letter-spacing:normal; }
     .f-col:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
     .codigo { color:var(--azul-medio); font-variant-numeric:tabular-nums; }
+    .asist-bar { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+    .asist-resumen { font-size:13.5px; color:var(--gris); }
+    .seg { display:inline-flex; }
+    .btn-as { border:1px solid var(--gris-claro); background:#fff; color:var(--gris); padding:5px 10px; font-size:12px; font-weight:600; cursor:pointer; }
+    .btn-as.a-si { border-radius:7px 0 0 7px; }
+    .btn-as.a-no { border-radius:0 7px 7px 0; border-left:none; }
+    .btn-as.a-si.on { background:#f4f8e8; color:#5a7000; border-color:#cdd9a8; }
+    .btn-as.a-no.on { background:#fbeae8; color:var(--rojo); border-color:#eccfca; }
+    .btn-as:disabled { opacity:.5; cursor:default; }
 
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
     @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
@@ -177,6 +186,10 @@
         </div>
         <div id="recProbarMsg" style="margin:0 0 14px;font-size:14px;line-height:1.4"></div>
         <div id="recKpis" class="kpis"></div>
+        <div class="asist-bar">
+          <button id="recMarcarTodas" class="btn-sec">✓ Marcar todas asistidas</button>
+          <span id="recAsistResumen" class="asist-resumen"></span>
+        </div>
         <div class="tabla-wrap"><div id="recCuerpo" class="scroll-x"></div></div>
       </section>
 
@@ -234,7 +247,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.7.0 — módulos: Recordatorio de citas (importar, tablero, estadísticas) + Plantillas</footer>
+    <footer>Automatiza · v0.8.0 — Recordatorio de citas con asistencia (marcar asistidas/faltas) + Plantillas</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -309,6 +322,7 @@
       $('recRefrescar').addEventListener('click', rec_cargar);
       $('recProbar').addEventListener('click', rec_probar);
       $('recVaciar').addEventListener('click', rec_vaciar);
+      $('recMarcarTodas').addEventListener('click', rec_marcarTodas);
       $('recCuerpo').addEventListener('click', rec_clicTabla);
       $('recCuerpo').addEventListener('input', rec_aplicarFiltros);
       $('recCuerpo').addEventListener('change', rec_aplicarFiltros);
@@ -364,7 +378,7 @@
       $('recCuerpo').innerHTML=
         `<table>
           <thead>
-            <tr><th>Hora</th><th class="num">Dur.</th><th>Código</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Estado</th><th>Recordatorio</th></tr>
+            <tr><th>Hora</th><th class="num">Dur.</th><th>Código</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Estado</th><th>Recordatorio</th><th>Asistencia</th></tr>
             <tr class="fila-filtros">
               <th></th>
               <th class="num"><select id="fDur" class="f-col"><option value="">Todas</option></select></th>
@@ -374,6 +388,7 @@
               <th><select id="fDoctor" class="f-col"><option value="">Todos</option></select></th>
               <th><select id="fEstado" class="f-col"><option value="">Todos</option></select></th>
               <th></th>
+              <th><select id="fAsist" class="f-col"><option value="">Todas</option><option value="asistio">Asistió</option><option value="no_asistio">Faltó</option><option value="pendiente">Sin marcar</option></select></th>
             </tr>
           </thead>
           <tbody id="recTbody"></tbody>
@@ -399,19 +414,29 @@
       const g=(id)=>{ const el=$(id); return el?el.value:''; };
       const fc=g('fCodigo').trim().toLowerCase();
       const ft=g('fTel').replace(/\D/g,'');
-      const fd=g('fDoctor'), fe=g('fEstado'), fu=g('fDur');
+      const fd=g('fDoctor'), fe=g('fEstado'), fu=g('fDur'), fa=g('fAsist');
       const filtradas=rec_rows.filter(r=>{
         if(fc && !rec_codigo(r.cita_id).toLowerCase().includes(fc)) return false;
         if(ft && !String(r.paciente_telefono||'').replace(/\D/g,'').includes(ft)) return false;
         if(fd && r.doctor!==fd) return false;
         if(fe && r.estado!==fe) return false;
         if(fu && String(r.duracion)!==fu) return false;
+        if(fa && (r.asistencia||'pendiente')!==fa) return false;
         return true;
       });
-      if(!filtradas.length){ tb.innerHTML='<tr><td colspan="8" class="vacio">No hay citas que mostrar.</td></tr>'; return; }
+      rec_resumenAsist();
+      if(!filtradas.length){ tb.innerHTML='<tr><td colspan="9" class="vacio">No hay citas que mostrar.</td></tr>'; return; }
       const cuenta={};
       rec_rows.forEach(r=>{ const k=rec_codigo(r.cita_id); cuenta[k]=(cuenta[k]||0)+1; });
       tb.innerHTML=filtradas.map(r=>rec_fila(r,cuenta)).join('');
+    }
+    function rec_resumenAsist(){
+      const asi=rec_rows.filter(r=>r.asistencia==='asistio').length;
+      const fal=rec_rows.filter(r=>r.asistencia==='no_asistio').length;
+      const sin=rec_rows.length-asi-fal;
+      $('recAsistResumen').innerHTML = rec_rows.length
+        ? `Asistencia del día: <b>${asi}</b> asistieron · <b style="color:var(--rojo)">${fal}</b> faltaron · ${sin} sin marcar`
+        : '';
     }
     function rec_renderKpis(rows){
       const c={confirmada:0,pendiente:0,enviado:0,cambio:0,no_asiste:0,sin_respuesta:0};
@@ -433,15 +458,42 @@
         const on = r.enviar!==false;
         env=`<button class="btn-env ${on?'on':'off'}" data-act="env" data-id="${esc(r.cita_id)}" data-on="${on?1:0}">${on?'✓ Se enviará':'✕ No enviar'}</button>`;
       } else { env='<span class="tel">—</span>'; }
-      return `<tr><td class="hora">${esc(hora)}</td><td class="num">${dur}</td><td class="codigo">${esc(rec_codigo(r.cita_id))}</td><td>${esc(r.paciente_nombre)}${repe}</td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td></tr>`;
+      const as = r.asistencia||'pendiente';
+      const asistCell = `<div class="seg">`
+        +`<button class="btn-as a-si ${as==='asistio'?'on':''}" data-act="asist" data-id="${esc(r.cita_id)}" data-val="asistio">Asistió</button>`
+        +`<button class="btn-as a-no ${as==='no_asistio'?'on':''}" data-act="asist" data-id="${esc(r.cita_id)}" data-val="no_asistio">Faltó</button>`
+        +`</div>`;
+      return `<tr><td class="hora">${esc(hora)}</td><td class="num">${dur}</td><td class="codigo">${esc(rec_codigo(r.cita_id))}</td><td>${esc(r.paciente_nombre)}${repe}</td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td><td>${asistCell}</td></tr>`;
     }
     async function rec_clicTabla(ev){
-      const b=ev.target.closest('button[data-act="env"]'); if(!b) return;
-      const id=b.getAttribute('data-id'), on=b.getAttribute('data-on')==='1';
-      b.disabled=true;
-      const { error } = await sb.from('recordatorios').update({ enviar: !on }).eq('cita_id', id);
-      if(error){ b.disabled=false; alert('No se pudo cambiar el envío: '+(error.message||error)); return; }
-      const row=rec_rows.find(r=>r.cita_id===id); if(row) row.enviar=!on;
+      const env=ev.target.closest('button[data-act="env"]');
+      if(env){
+        const id=env.getAttribute('data-id'), on=env.getAttribute('data-on')==='1';
+        env.disabled=true;
+        const { error } = await sb.from('recordatorios').update({ enviar: !on }).eq('cita_id', id);
+        if(error){ env.disabled=false; alert('No se pudo cambiar el envío: '+(error.message||error)); return; }
+        const row=rec_rows.find(r=>r.cita_id===id); if(row) row.enviar=!on;
+        rec_aplicarFiltros(); return;
+      }
+      const as=ev.target.closest('button[data-act="asist"]');
+      if(as){
+        const id=as.getAttribute('data-id'), val=as.getAttribute('data-val');
+        as.disabled=true;
+        const { error } = await sb.from('recordatorios').update({ asistencia: val }).eq('cita_id', id);
+        if(error){ as.disabled=false; alert('No se pudo marcar la asistencia: '+(error.message||error)); return; }
+        const row=rec_rows.find(r=>r.cita_id===id); if(row) row.asistencia=val;
+        rec_aplicarFiltros(); return;
+      }
+    }
+    async function rec_marcarTodas(){
+      if(!rec_rows.length) return;
+      if(!confirm('¿Marcar TODAS las citas de este día como "Asistió"?\n\nDespués marca una a una las que faltaron (botón "Faltó").')) return;
+      const btn=$('recMarcarTodas'); btn.disabled=true; const t=btn.textContent; btn.textContent='Marcando…';
+      const ids=rec_rows.map(r=>r.cita_id);
+      const { error } = await sb.from('recordatorios').update({ asistencia:'asistio' }).in('cita_id', ids);
+      btn.disabled=false; btn.textContent=t;
+      if(error){ alert('No se pudo marcar: '+(error.message||error)); return; }
+      rec_rows.forEach(r=>r.asistencia='asistio');
       rec_aplicarFiltros();
     }
 
