@@ -118,6 +118,8 @@
     .btn-env.off { color:var(--gris); }
     .btn-env:hover { filter:brightness(.97); }
     .btn-env:disabled { opacity:.5; cursor:default; }
+    .btn-peligro { color:var(--rojo); border-color:#eccfca; }
+    .btn-peligro:hover { background:#fbeae8; }
 
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
     @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
@@ -155,7 +157,7 @@
       <section id="vistaTablero" class="vista activa">
         <div class="head">
           <div><p class="kicker">Recordatorios WhatsApp</p><h2>Tablero del día</h2></div>
-          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
+          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="recVaciar" class="btn-sec btn-peligro">Vaciar día</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
         </div>
         <div id="recProbarMsg" style="margin:0 0 14px;font-size:14px;line-height:1.4"></div>
         <div id="recKpis" class="kpis"></div>
@@ -216,7 +218,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.5.1 — tablero + importar (repetidas/sin teléfono) + estadísticas + plantillas + prueba</footer>
+    <footer>Automatiza · v0.5.2 — tablero (vaciar día) + importar + estadísticas + plantillas + prueba</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -282,7 +284,20 @@
       $('recFecha').addEventListener('change', rec_cargar);
       $('recRefrescar').addEventListener('click', rec_cargar);
       $('recProbar').addEventListener('click', rec_probar);
+      $('recVaciar').addEventListener('click', rec_vaciar);
       $('recCuerpo').addEventListener('click', rec_clicTabla);
+      rec_cargar();
+    }
+    async function rec_vaciar(){
+      const fecha=$('recFecha').value;
+      if(!fecha) return;
+      if(!confirm(`¿Eliminar TODAS las citas cargadas del ${fecha}?\n\nBorra los recordatorios de ese día en Automatiza (no toca Odontonet). Después podrás importar otro archivo. La fila de prueba TEST-MOVIL no se borra.`)) return;
+      const btn=$('recVaciar'); btn.disabled=true; const t=btn.textContent; btn.textContent='Eliminando…';
+      const { startISO, endISO } = dayBoundsFull(fecha);
+      const { error } = await sb.from('recordatorios').delete()
+        .neq('cita_id','TEST-MOVIL').gte('fecha_cita',startISO).lt('fecha_cita',endISO);
+      btn.disabled=false; btn.textContent=t;
+      if(error){ alert('No se pudo vaciar el día: '+(error.message||error)); return; }
       rec_cargar();
     }
     async function rec_probar(){
