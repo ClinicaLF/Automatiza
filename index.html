@@ -113,6 +113,11 @@
     .file-in { display:block; font-size:14px; color:var(--azul); padding:10px 0; }
     .file-in::file-selector-button { font-family:inherit; font-size:14px; font-weight:600; color:var(--azul); background:var(--sand-2); border:1px solid var(--gris-claro); border-radius:8px; padding:9px 16px; margin-right:12px; cursor:pointer; }
     .file-in::file-selector-button:hover { background:#e3dccd; }
+    .btn-env { border:1px solid var(--gris-claro); border-radius:7px; padding:6px 11px; font-size:12.5px; font-weight:600; background:#fff; white-space:nowrap; }
+    .btn-env.on { color:#5a7000; border-color:#cdd9a8; background:#f4f8e8; }
+    .btn-env.off { color:var(--gris); }
+    .btn-env:hover { filter:brightness(.97); }
+    .btn-env:disabled { opacity:.5; cursor:default; }
 
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
     @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
@@ -211,7 +216,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.5.0 — tablero + importar + estadísticas + plantillas + prueba</footer>
+    <footer>Automatiza · v0.5.1 — tablero + importar (repetidas/sin teléfono) + estadísticas + plantillas + prueba</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -277,6 +282,7 @@
       $('recFecha').addEventListener('change', rec_cargar);
       $('recRefrescar').addEventListener('click', rec_cargar);
       $('recProbar').addEventListener('click', rec_probar);
+      $('recCuerpo').addEventListener('click', rec_clicTabla);
       rec_cargar();
     }
     async function rec_probar(){
@@ -313,15 +319,35 @@
       const t=[{n:rows.length,l:'Citas',cls:''},{n:c.confirmada,l:'Confirmadas',cls:'verde'},{n:c.pendiente+c.enviado,l:'Sin responder',cls:'azul'},{n:c.cambio,l:'Cambios',cls:'ambar'},{n:c.no_asiste,l:'No asisten',cls:'rojo'},{n:c.sin_respuesta,l:'Sin respuesta',cls:''}];
       $('recKpis').innerHTML = t.map(x=>`<div class="kpi ${x.cls}"><div class="n">${x.n}</div><div class="l">${esc(x.l)}</div></div>`).join('');
     }
+    function rec_codigo(citaId){ return String(citaId||'').split('-')[0]; }
     function rec_renderTabla(rows){
       const cuerpo=$('recCuerpo');
       if(!rows.length){ cuerpo.innerHTML='<div class="vacio">No hay citas para este día.</div>'; return; }
+      const cuenta={};
+      rows.forEach(r=>{ const k=rec_codigo(r.cita_id); cuenta[k]=(cuenta[k]||0)+1; });
       const filas=rows.map(r=>{
         const hora=new Date(r.fecha_cita).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
         const e=REC_ESTADOS[r.estado]||{label:r.estado,cls:'b-pendiente'};
-        return `<tr><td class="hora">${esc(hora)}</td><td>${esc(r.paciente_nombre)}</td><td class="tel">${esc(r.paciente_telefono)}</td><td>${esc(r.doctor)||'—'}</td><td>${esc(r.tratamiento)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td></tr>`;
+        const repe = cuenta[rec_codigo(r.cita_id)]>1 ? ` <span class="badge b-cambio">Repetida</span>` : '';
+        const sinTel = !r.paciente_telefono;
+        const tel = sinTel ? '<span class="warn">Sin teléfono</span>' : esc(r.paciente_telefono);
+        let env;
+        if(sinTel){ env=`<span class="tel">No (sin tel.)</span>`; }
+        else if(r.estado==='pendiente'){
+          const on = r.enviar!==false;
+          env=`<button class="btn-env ${on?'on':'off'}" data-act="env" data-id="${esc(r.cita_id)}" data-on="${on?1:0}">${on?'✓ Se enviará':'✕ No enviar'}</button>`;
+        } else { env='<span class="tel">—</span>'; }
+        return `<tr><td class="hora">${esc(hora)}</td><td>${esc(r.paciente_nombre)}${repe}</td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td></tr>`;
       }).join('');
-      cuerpo.innerHTML=`<table><thead><tr><th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Tratamiento</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table>`;
+      cuerpo.innerHTML=`<table><thead><tr><th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Estado</th><th>Recordatorio</th></tr></thead><tbody>${filas}</tbody></table>`;
+    }
+    async function rec_clicTabla(ev){
+      const b=ev.target.closest('button[data-act="env"]'); if(!b) return;
+      const id=b.getAttribute('data-id'), on=b.getAttribute('data-on')==='1';
+      b.disabled=true;
+      const { error } = await sb.from('recordatorios').update({ enviar: !on }).eq('cita_id', id);
+      if(error){ b.disabled=false; alert('No se pudo cambiar el envío: '+(error.message||error)); return; }
+      rec_cargar();
     }
 
     // ---- Estadísticas (est_) ----
@@ -487,8 +513,9 @@
       catch(err){ $('impResumen').innerHTML='<span class="warn">No se pudo leer el archivo: '+esc(String(err&&err.message||err))+'</span>'; }
     }
     function imp_procesar(filas){
-      let nSinTel=0, nAnot=0, nMala=0;
-      const mapa={}; // cita_id -> cita más temprana
+      let nAnot=0;
+      const vistos=new Set();   // cita_id ya visto (duplicado exacto)
+      const citas=[];
       filas.forEach(cols=>{
         if(!cols || cols.length<6) return;
         const agenda=String(cols[0]||'').trim();
@@ -496,43 +523,65 @@
         const hm=String(cols[2]||'').match(/(\d{1,2}):(\d{2})/);
         const codigo=String(cols[4]||'').trim();
         const nombre=String(cols[5]||'').trim();
-        const tel=imp_normTel(cols[cols.length-1]);
         if(!fm || !hm) return;                      // cabecera o fila sin cita
         if(!/^\d+$/.test(codigo)) return;
+        if(/NOTA/i.test(nombre)){ nAnot++; return; }   // filas de notas internas, no pacientes
         if(IMP_AGENDA_EXCLUIR.has(agenda)){ nAnot++; return; }
-        if(!tel){ nSinTel++; return; }
-        if(!imp_telValido(tel)){ nMala++; return; }
+        const tel=imp_normTel(cols[cols.length-1]);
+        const sinTel=!imp_telValido(tel);
         const dd=fm[1].padStart(2,'0'), mm=fm[2].padStart(2,'0'), yyyy=fm[3];
         const HH=hm[1].padStart(2,'0'), MM=hm[2];
-        const minutos=parseInt(HH,10)*60+parseInt(MM,10);
-        const cita_id=`${codigo}-${yyyy}${mm}${dd}`;
-        const cita={
+        const cita_id=`${codigo}-${yyyy}${mm}${dd}-${HH}${MM}-${agenda}`;
+        if(vistos.has(cita_id)) return;             // misma cita listada dos veces
+        vistos.add(cita_id);
+        citas.push({
           cita_id,
           paciente_nombre:imp_propio(nombre),
-          paciente_telefono:tel,
+          paciente_telefono: sinTel ? null : tel,
           doctor:IMP_AGENDA_DOCTOR[agenda]||'nuestro equipo',
           fecha_cita:`${yyyy}-${mm}-${dd}T${HH}:${MM}:00+02:00`,
           estado:'pendiente',
-          _min:minutos, _hora:`${HH}:${MM}`, _fecha:`${dd}/${mm}/${yyyy}`
-        };
-        if(!mapa[cita_id] || minutos<mapa[cita_id]._min) mapa[cita_id]=cita;
+          enviar: !sinTel,
+          _codigo:codigo, _min:parseInt(HH,10)*60+parseInt(MM,10),
+          _hora:`${HH}:${MM}`, _fecha:`${dd}/${mm}/${yyyy}`, _sinTel:sinTel, _repetida:false
+        });
       });
-      imp_preparadas=Object.values(mapa).sort((a,b)=> a.fecha_cita<b.fecha_cita?-1:1);
-      imp_render(nSinTel,nAnot,nMala);
+      // marcar repetidas (mismo paciente y día) y, por defecto, enviar solo la más temprana
+      const grupos={};
+      citas.forEach(c=>{ const k=c._codigo+'|'+c._fecha; (grupos[k]=grupos[k]||[]).push(c); });
+      Object.values(grupos).forEach(g=>{
+        if(g.length<=1) return;
+        g.forEach(c=>{ c._repetida=true; c.enviar=false; });
+        const conTel=g.filter(c=>!c._sinTel).sort((a,b)=>a._min-b._min);
+        if(conTel.length) conTel[0].enviar=true;   // la más temprana con teléfono sí se envía
+      });
+      let nSinTel=0, nRep=0;
+      citas.forEach(c=>{ if(c._sinTel) nSinTel++; if(c._repetida) nRep++; });
+      imp_preparadas=citas.sort((a,b)=> a.fecha_cita<b.fecha_cita?-1:1);
+      imp_render({nSinTel,nAnot,nRep});
     }
-    function imp_render(nSinTel,nAnot,nMala){
+    function imp_render(x){
       const n=imp_preparadas.length;
-      const partes=[];
-      if(nAnot)   partes.push(`${nAnot} anotaciones`);
-      if(nSinTel) partes.push(`${nSinTel} sin teléfono`);
-      if(nMala)   partes.push(`${nMala} con teléfono no válido`);
-      const excl = partes.length ? ` · Excluidas: ${partes.join(', ')}.` : '';
-      if(!n){ $('impResumen').innerHTML=`<span class="warn">No se ha encontrado ninguna cita válida en el archivo.${excl}</span>`; return; }
+      if(!n){
+        const ex = x.nAnot ? ` Excluidas: ${x.nAnot} anotaciones.` : '';
+        $('impResumen').innerHTML=`<span class="warn">No se ha encontrado ninguna cita válida en el archivo.${ex}</span>`; return;
+      }
       const fechas=[...new Set(imp_preparadas.map(c=>c._fecha))];
-      $('impResumen').innerHTML=`<strong>${n}</strong> citas listas para importar (${esc(fechas.join(', '))}).${excl}`
-        +`<span class="ayuda" style="display:block;margin-top:6px">Revisa la lista y pulsa “Importar citas”. Solo se crean como <b>pendiente</b>; no se envía ningún WhatsApp.</span>`;
-      const filas=imp_preparadas.map(c=>`<tr><td>${esc(c._fecha)}</td><td class="hora">${esc(c._hora)}</td><td>${esc(c.paciente_nombre)}</td><td class="tel">${esc(c.paciente_telefono)}</td><td>${esc(c.doctor)}</td></tr>`).join('');
-      $('impPreview').innerHTML=`<div class="tabla-wrap"><table><thead><tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Profesional</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+      const notas=[];
+      if(x.nRep)    notas.push(`${x.nRep} repetidas`);
+      if(x.nSinTel) notas.push(`${x.nSinTel} sin teléfono`);
+      if(x.nAnot)   notas.push(`${x.nAnot} anotaciones excluidas`);
+      $('impResumen').innerHTML=`<strong>${n}</strong> citas para importar (${esc(fechas.join(', '))}).`
+        + (notas.length?` <span class="ayuda" style="display:block;margin-top:6px">${esc(notas.join(' · '))}.</span>`:'')
+        + `<span class="ayuda" style="display:block;margin-top:4px">Se crean como <b>pendiente</b>; no se envía ningún WhatsApp. En las repetidas, por defecto solo se enviará la más temprana — puedes cambiarlo en el Tablero.</span>`;
+      const filas=imp_preparadas.map(c=>{
+        const marca = c._sinTel ? `<span class="badge b-sin_respuesta">Sin teléfono</span>`
+                    : c._repetida ? `<span class="badge b-cambio">Repetida</span>` : '';
+        const envia = c.enviar ? `<span style="color:#5a7000;font-weight:600">Sí</span>`
+                    : `<span class="tel">No${c._sinTel?' (sin tel.)':(c._repetida?' (repetida)':'')}</span>`;
+        return `<tr><td>${esc(c._fecha)}</td><td class="hora">${esc(c._hora)}</td><td>${esc(c.paciente_nombre)} ${marca}</td><td class="tel">${esc(c.paciente_telefono||'—')}</td><td>${esc(c.doctor)}</td><td>${envia}</td></tr>`;
+      }).join('');
+      $('impPreview').innerHTML=`<div class="tabla-wrap"><table><thead><tr><th>Fecha</th><th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Profesional</th><th>Envío</th></tr></thead><tbody>${filas}</tbody></table></div>`;
       $('impConfirmar').style.display='';
     }
     async function imp_confirmar(){
@@ -540,7 +589,7 @@
       const btn=$('impConfirmar'), res=$('impResultado');
       btn.disabled=true; const txt=btn.textContent; btn.textContent='Importando…';
       res.style.color='var(--gris)'; res.textContent='Comprobando duplicados…';
-      const limpias=imp_preparadas.map(({_min,_hora,_fecha,...c})=>c);
+      const limpias=imp_preparadas.map(c=>{ const o={}; for(const k in c){ if(!k.startsWith('_')) o[k]=c[k]; } return o; });
       const ids=limpias.map(c=>c.cita_id);
       try{
         const q=await sb.from('recordatorios').select('cita_id').in('cita_id', ids);
