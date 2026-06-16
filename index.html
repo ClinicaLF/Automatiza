@@ -5,342 +5,336 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Automatiza — Centro Odontológico Laura Fernández</title>
   <style>
-    /* ============================================================
-       Automatiza — paleta de marca (azul-gris protagonista, neutra)
-       ============================================================ */
     :root {
-      --azul:        #333F48;
-      --azul-medio:  #5A6770;
-      --sand:        #F4F0E9;
-      --sand-2:      #EAE3D7;
-      --madera:      #B8A88F;
-      --gris:        #6C757D;
-      --gris-claro:  #E8EAED;
-      --blanco:      #FFFFFF;
-      --verde:       #8FB800;
-      --rojo:        #C0392B;
-      --ambar:       #B07B2A;
-      --radio:       10px;
-      --sombra:      0 1px 3px rgba(51,63,72,.08), 0 8px 24px rgba(51,63,72,.06);
+      --azul:#333F48; --azul-medio:#5A6770; --sand:#F4F0E9; --sand-2:#EAE3D7;
+      --madera:#B8A88F; --gris:#6C757D; --gris-claro:#E8EAED; --blanco:#FFFFFF;
+      --verde:#8FB800; --rojo:#C0392B; --ambar:#B07B2A;
+      --radio:10px; --sombra:0 1px 3px rgba(51,63,72,.08), 0 8px 24px rgba(51,63,72,.06);
     }
-
     * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--azul); background:var(--sand); -webkit-font-smoothing:antialiased; }
+    h1,h2 { font-family:Georgia,"Times New Roman",serif; }
+    button { font-family:inherit; cursor:pointer; }
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: var(--azul);
-      background: var(--sand);
-      -webkit-font-smoothing: antialiased;
-    }
-    h1, h2 { font-family: Georgia, "Times New Roman", serif; }
-    button { font-family: inherit; cursor: pointer; }
+    /* Login */
+    #login { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .login-card { width:100%; max-width:380px; background:var(--blanco); border-radius:var(--radio); box-shadow:var(--sombra); padding:36px 32px 32px; border-top:3px solid var(--madera); }
+    .login-card .kicker { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--madera); font-weight:700; margin:0 0 6px; }
+    .login-card h1 { margin:0 0 4px; font-size:26px; color:var(--azul); }
+    .login-card .sub { margin:0 0 26px; color:var(--gris); font-size:13.5px; }
+    .campo { margin-bottom:16px; }
+    .campo label { display:block; font-size:13px; font-weight:600; color:var(--azul-medio); margin-bottom:6px; }
+    .campo input { width:100%; padding:11px 12px; font-size:15px; border:1px solid var(--gris-claro); border-radius:8px; background:#fff; color:var(--azul); transition:border-color .15s,box-shadow .15s; }
+    .campo input:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .btn-primario { width:100%; padding:12px; font-size:15px; font-weight:600; color:#fff; background:var(--azul); border:none; border-radius:8px; margin-top:6px; transition:background .15s; }
+    .btn-primario:hover { background:#2a343b; }
+    .btn-primario:disabled { opacity:.55; cursor:default; }
+    .aviso { margin-top:14px; font-size:13px; padding:10px 12px; border-radius:8px; display:none; }
+    .aviso.error { display:block; background:#fbeae8; color:var(--rojo); }
 
-    /* ---------- Login ---------- */
-    #login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .login-card {
-      width: 100%; max-width: 380px; background: var(--blanco);
-      border-radius: var(--radio); box-shadow: var(--sombra);
-      padding: 36px 32px 32px; border-top: 3px solid var(--madera);
-    }
-    .login-card .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--madera); font-weight: 700; margin: 0 0 6px; }
-    .login-card h1 { margin: 0 0 4px; font-size: 26px; color: var(--azul); }
-    .login-card .sub { margin: 0 0 26px; color: var(--gris); font-size: 13.5px; }
-    .campo { margin-bottom: 16px; }
-    .campo label { display: block; font-size: 13px; font-weight: 600; color: var(--azul-medio); margin-bottom: 6px; }
-    .campo input {
-      width: 100%; padding: 11px 12px; font-size: 15px;
-      border: 1px solid var(--gris-claro); border-radius: 8px; background: #fff; color: var(--azul);
-      transition: border-color .15s, box-shadow .15s;
-    }
-    .campo input:focus { outline: none; border-color: var(--azul-medio); box-shadow: 0 0 0 3px rgba(90,103,112,.15); }
-    .btn-primario {
-      width: 100%; padding: 12px; font-size: 15px; font-weight: 600; color: #fff;
-      background: var(--azul); border: none; border-radius: 8px; margin-top: 6px; transition: background .15s;
-    }
-    .btn-primario:hover { background: #2a343b; }
-    .btn-primario:disabled { opacity: .55; cursor: default; }
-    .aviso { margin-top: 14px; font-size: 13px; padding: 10px 12px; border-radius: 8px; display: none; }
-    .aviso.error { display: block; background: #fbeae8; color: var(--rojo); }
+    /* App */
+    #app { display:none; min-height:100vh; flex-direction:column; }
+    .topbar { background:var(--azul); color:#fff; padding:14px 22px; display:flex; align-items:center; justify-content:space-between; }
+    .topbar .marca { display:flex; flex-direction:column; line-height:1.2; }
+    .topbar .marca strong { font-family:Georgia,serif; font-size:18px; font-weight:600; }
+    .topbar .marca span { font-size:11px; color:#b9c1c7; letter-spacing:.04em; }
+    .topbar .usuario { display:flex; align-items:center; gap:14px; font-size:13px; color:#cfd6da; }
+    .btn-salir { background:transparent; border:1px solid #5A6770; color:#dfe4e7; padding:6px 12px; border-radius:7px; font-size:13px; }
+    .btn-salir:hover { background:#3d4953; }
 
-    /* ---------- App ---------- */
-    #app { display: none; min-height: 100vh; flex-direction: column; }
-    .topbar { background: var(--azul); color: #fff; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; }
-    .topbar .marca { display: flex; flex-direction: column; line-height: 1.2; }
-    .topbar .marca strong { font-family: Georgia, serif; font-size: 18px; font-weight: 600; }
-    .topbar .marca span { font-size: 11px; color: #b9c1c7; letter-spacing: .04em; }
-    .topbar .usuario { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #cfd6da; }
-    .btn-salir { background: transparent; border: 1px solid #5A6770; color: #dfe4e7; padding: 6px 12px; border-radius: 7px; font-size: 13px; }
-    .btn-salir:hover { background: #3d4953; }
+    /* Nav tabs */
+    .nav { background:#2c363e; padding:0 22px; display:flex; gap:4px; }
+    .nav button { background:transparent; border:none; color:#aab3ba; padding:13px 18px; font-size:14px; font-weight:600; border-bottom:3px solid transparent; }
+    .nav button:hover { color:#fff; }
+    .nav button.activo { color:#fff; border-bottom-color:var(--madera); }
 
-    .contenido { flex: 1; padding: 28px 22px; max-width: 1100px; width: 100%; margin: 0 auto; }
+    .contenido { flex:1; padding:28px 22px; max-width:1100px; width:100%; margin:0 auto; }
+    .vista { display:none; }
+    .vista.activa { display:block; }
 
-    /* ---------- Recordatorios (rec_) ---------- */
-    .rec-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; }
-    .rec-head .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--madera); font-weight: 700; margin: 0 0 4px; }
-    .rec-head h2 { margin: 0; font-size: 24px; color: var(--azul); }
-    .rec-controls { display: flex; align-items: center; gap: 10px; }
-    .rec-controls input[type=date] {
-      padding: 8px 10px; font-size: 14px; border: 1px solid var(--gris-claro); border-radius: 8px; color: var(--azul); background: #fff;
-    }
-    .rec-controls input[type=date]:focus { outline: none; border-color: var(--azul-medio); box-shadow: 0 0 0 3px rgba(90,103,112,.15); }
-    .btn-sec { background: #fff; border: 1px solid var(--gris-claro); color: var(--azul); padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; }
-    .btn-sec:hover { background: var(--sand-2); }
+    /* Cabecera de cada vista */
+    .head { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px; margin-bottom:20px; }
+    .head .kicker { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--madera); font-weight:700; margin:0 0 4px; }
+    .head h2 { margin:0; font-size:24px; color:var(--azul); }
+    .controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .controls label { font-size:12px; color:var(--gris); margin-right:2px; }
+    .controls input[type=date] { padding:8px 10px; font-size:14px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); background:#fff; }
+    .controls input[type=date]:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .btn-sec { background:#fff; border:1px solid var(--gris-claro); color:var(--azul); padding:8px 14px; border-radius:8px; font-size:14px; font-weight:600; }
+    .btn-sec:hover { background:var(--sand-2); }
 
-    /* KPIs */
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
-    .kpi { background: #fff; border-radius: var(--radio); box-shadow: var(--sombra); padding: 16px 18px; border-left: 3px solid var(--madera); }
-    .kpi .n { font-size: 28px; font-weight: 700; font-family: Georgia, serif; color: var(--azul); line-height: 1; }
-    .kpi .l { font-size: 12px; color: var(--gris); margin-top: 6px; text-transform: uppercase; letter-spacing: .06em; }
-    .kpi.verde { border-left-color: var(--verde); }
-    .kpi.azul  { border-left-color: var(--azul-medio); }
-    .kpi.ambar { border-left-color: var(--ambar); }
-    .kpi.rojo  { border-left-color: var(--rojo); }
+    .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:22px; }
+    .kpi { background:#fff; border-radius:var(--radio); box-shadow:var(--sombra); padding:16px 18px; border-left:3px solid var(--madera); }
+    .kpi .n { font-size:28px; font-weight:700; font-family:Georgia,serif; color:var(--azul); line-height:1; }
+    .kpi .l { font-size:12px; color:var(--gris); margin-top:6px; text-transform:uppercase; letter-spacing:.06em; }
+    .kpi .sub { font-size:11.5px; color:var(--azul-medio); margin-top:3px; }
+    .kpi.verde { border-left-color:var(--verde); }
+    .kpi.azul { border-left-color:var(--azul-medio); }
+    .kpi.ambar { border-left-color:var(--ambar); }
+    .kpi.rojo { border-left-color:var(--rojo); }
 
-    /* Tabla */
-    .tabla-wrap { background: #fff; border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; }
-    .scroll-x { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px; }
-    thead th { text-align: left; padding: 12px 16px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--gris); background: var(--sand-2); border-bottom: 1px solid var(--gris-claro); }
-    tbody td { padding: 13px 16px; border-bottom: 1px solid var(--gris-claro); color: var(--azul); }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: #faf8f4; }
-    .hora { font-weight: 700; font-variant-numeric: tabular-nums; }
-    .tel { color: var(--gris); font-variant-numeric: tabular-nums; }
+    .tabla-wrap { background:#fff; border-radius:var(--radio); box-shadow:var(--sombra); overflow:hidden; }
+    .scroll-x { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:14px; min-width:560px; }
+    thead th { text-align:left; padding:12px 16px; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--gris); background:var(--sand-2); border-bottom:1px solid var(--gris-claro); }
+    tbody td { padding:13px 16px; border-bottom:1px solid var(--gris-claro); color:var(--azul); }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody tr:hover { background:#faf8f4; }
+    .hora { font-weight:700; font-variant-numeric:tabular-nums; }
+    .tel { color:var(--gris); font-variant-numeric:tabular-nums; }
+    .num { text-align:right; font-variant-numeric:tabular-nums; }
 
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-    .b-pendiente     { background: var(--gris-claro); color: var(--azul-medio); }
-    .b-enviado       { background: #e4e9ed; color: var(--azul-medio); }
-    .b-confirmada    { background: #eaf2d6; color: #5a7000; }
-    .b-cambio        { background: #f6ecdc; color: var(--ambar); }
-    .b-no_asiste     { background: #fbeae8; color: var(--rojo); }
-    .b-sin_respuesta { background: #e9e6e1; color: var(--gris); }
+    .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+    .b-pendiente { background:var(--gris-claro); color:var(--azul-medio); }
+    .b-enviado { background:#e4e9ed; color:var(--azul-medio); }
+    .b-confirmada { background:#eaf2d6; color:#5a7000; }
+    .b-cambio { background:#f6ecdc; color:var(--ambar); }
+    .b-no_asiste { background:#fbeae8; color:var(--rojo); }
+    .b-sin_respuesta { background:#e9e6e1; color:var(--gris); }
 
-    .vacio, .cargando, .error-box { padding: 40px; text-align: center; color: var(--gris); font-size: 14.5px; }
-    .error-box { color: var(--rojo); }
+    .seccion-titulo { font-size:13px; font-weight:700; color:var(--azul-medio); text-transform:uppercase; letter-spacing:.06em; margin:26px 0 12px; }
+    .vacio, .cargando, .error-box { padding:40px; text-align:center; color:var(--gris); font-size:14.5px; }
+    .error-box { color:var(--rojo); }
+    footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
 
-    footer { text-align: center; padding: 16px; font-size: 11.5px; color: var(--gris); }
-
-    @media (max-width: 560px) {
-      .rec-head { align-items: stretch; }
-      .rec-controls { width: 100%; }
-      .rec-controls input[type=date] { flex: 1; }
-    }
+    @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} }
   </style>
 </head>
 <body>
 
-  <!-- ====================== LOGIN ====================== -->
+  <!-- LOGIN -->
   <section id="login">
     <div class="login-card">
       <p class="kicker">Centro Odontológico</p>
       <h1>Automatiza</h1>
       <p class="sub">Automatizaciones e IA del Centro. Accede con tu cuenta.</p>
-      <div class="campo">
-        <label for="email">Correo</label>
-        <input id="email" type="email" autocomplete="username" placeholder="tu@correo.com">
-      </div>
-      <div class="campo">
-        <label for="password">Contraseña</label>
-        <input id="password" type="password" autocomplete="current-password" placeholder="••••••••">
-      </div>
+      <div class="campo"><label for="email">Correo</label><input id="email" type="email" autocomplete="username" placeholder="tu@correo.com"></div>
+      <div class="campo"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
       <button id="btnLogin" class="btn-primario">Entrar</button>
       <div id="avisoLogin" class="aviso"></div>
     </div>
   </section>
 
-  <!-- ====================== APP ====================== -->
+  <!-- APP -->
   <div id="app">
     <header class="topbar">
-      <div class="marca">
-        <strong>Automatiza</strong>
-        <span>Centro Odontológico Laura Fernández</span>
-      </div>
-      <div class="usuario">
-        <span id="usuarioEmail"></span>
-        <button id="btnSalir" class="btn-salir">Salir</button>
-      </div>
+      <div class="marca"><strong>Automatiza</strong><span>Centro Odontológico Laura Fernández</span></div>
+      <div class="usuario"><span id="usuarioEmail"></span><button id="btnSalir" class="btn-salir">Salir</button></div>
     </header>
 
+    <nav class="nav">
+      <button id="navTablero" class="activo">Tablero del día</button>
+      <button id="navEstadisticas">Estadísticas</button>
+    </nav>
+
     <main class="contenido">
-      <div class="rec-head">
-        <div>
-          <p class="kicker">Recordatorios WhatsApp</p>
-          <h2>Tablero del día</h2>
-        </div>
-        <div class="rec-controls">
-          <input id="recFecha" type="date">
-          <button id="recRefrescar" class="btn-sec">Actualizar</button>
-        </div>
-      </div>
 
-      <div id="recKpis" class="kpis"></div>
+      <!-- VISTA: TABLERO -->
+      <section id="vistaTablero" class="vista activa">
+        <div class="head">
+          <div><p class="kicker">Recordatorios WhatsApp</p><h2>Tablero del día</h2></div>
+          <div class="controls">
+            <input id="recFecha" type="date">
+            <button id="recRefrescar" class="btn-sec">Actualizar</button>
+          </div>
+        </div>
+        <div id="recKpis" class="kpis"></div>
+        <div class="tabla-wrap"><div id="recCuerpo" class="scroll-x"></div></div>
+      </section>
 
-      <div class="tabla-wrap">
-        <div id="recCuerpo" class="scroll-x"></div>
-      </div>
+      <!-- VISTA: ESTADÍSTICAS -->
+      <section id="vistaEstadisticas" class="vista">
+        <div class="head">
+          <div><p class="kicker">Análisis</p><h2>Estadísticas</h2></div>
+          <div class="controls">
+            <label>Desde</label><input id="estDesde" type="date">
+            <label>Hasta</label><input id="estHasta" type="date">
+            <button id="estRefrescar" class="btn-sec">Actualizar</button>
+          </div>
+        </div>
+        <div id="estKpis" class="kpis"></div>
+        <div class="seccion-titulo">Por doctor</div>
+        <div class="tabla-wrap"><div id="estDoctores" class="scroll-x"></div></div>
+      </section>
+
     </main>
 
-    <footer>Automatiza · v0.2.0 — tablero</footer>
+    <footer>Automatiza · v0.3.0 — tablero + estadísticas</footer>
   </div>
 
-  <!-- ====================== SUPABASE ====================== -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    /* ============================================================
-       CONFIG — proyecto Supabase "Automatiza"
-       Publishable key: pública y segura en navegador (RLS protege).
-       ============================================================ */
     const SUPABASE_URL = 'https://hihkuxvfvvsjdwixapmm.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_uJx2ddGxeXh7CSuJIr1CsQ_d16UOs9O';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    /* Convención de nombres (igual que Lucai):
-       auth_*  autenticación · app_* estructura · rec_* módulo Recordatorios */
-
     const $ = (id) => document.getElementById(id);
-    const esc = (s) => (s == null ? '' : String(s)).replace(/[&<>"']/g,
-      c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const esc = (s) => (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const pct = (n,d) => d>0 ? Math.round((n/d)*100) : 0;
 
-    let app_recIniciado = false;
-
-    // ---------- Login / sesión ----------
-    function app_render(session) {
-      if (session && session.user) {
-        $('login').style.display = 'none';
-        $('app').style.display = 'flex';
-        $('usuarioEmail').textContent = session.user.email || '';
-        if (!app_recIniciado) { app_recIniciado = true; rec_init(); }
-      } else {
-        $('app').style.display = 'none';
-        $('login').style.display = 'flex';
-      }
-    }
-
-    async function auth_login() {
-      const email = $('email').value.trim();
-      const password = $('password').value;
-      const aviso = $('avisoLogin');
-      aviso.className = 'aviso'; aviso.textContent = '';
-      if (!email || !password) {
-        aviso.className = 'aviso error';
-        aviso.textContent = 'Escribe tu correo y tu contraseña.';
-        return;
-      }
-      $('btnLogin').disabled = true; $('btnLogin').textContent = 'Entrando…';
-      const { error } = await sb.auth.signInWithPassword({ email, password });
-      $('btnLogin').disabled = false; $('btnLogin').textContent = 'Entrar';
-      if (error) {
-        aviso.className = 'aviso error';
-        aviso.textContent = 'No se pudo entrar. Revisa el correo y la contraseña.';
-      }
-    }
-
-    async function auth_logout() { await sb.auth.signOut(); }
-
-    // ---------- Recordatorios (rec_) ----------
     const REC_ESTADOS = {
-      pendiente:     { label: 'Pendiente',      cls: 'b-pendiente' },
-      enviado:       { label: 'Enviado',        cls: 'b-enviado' },
-      confirmada:    { label: 'Confirmada',     cls: 'b-confirmada' },
-      cambio:        { label: 'Quiere cambiar', cls: 'b-cambio' },
-      no_asiste:     { label: 'No asiste',      cls: 'b-no_asiste' },
-      sin_respuesta: { label: 'Sin respuesta',  cls: 'b-sin_respuesta' }
+      pendiente:{label:'Pendiente',cls:'b-pendiente'},
+      enviado:{label:'Enviado',cls:'b-enviado'},
+      confirmada:{label:'Confirmada',cls:'b-confirmada'},
+      cambio:{label:'Quiere cambiar',cls:'b-cambio'},
+      no_asiste:{label:'No asiste',cls:'b-no_asiste'},
+      sin_respuesta:{label:'Sin respuesta',cls:'b-sin_respuesta'}
     };
 
-    function rec_hoyStr() {
-      const d = new Date();
-      const p = (n) => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    function fechaStr(d){ const p=(n)=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+    function dayBounds(dStr){ const [y,m,d]=dStr.split('-').map(Number); return { startISO:new Date(y,m-1,d,0,0,0,0).toISOString() }; }
+    function rangeBounds(desde,hasta){
+      const [y1,m1,d1]=desde.split('-').map(Number);
+      const [y2,m2,d2]=hasta.split('-').map(Number);
+      return { startISO:new Date(y1,m1-1,d1,0,0,0,0).toISOString(), endISO:new Date(y2,m2-1,d2+1,0,0,0,0).toISOString() };
+    }
+    function dayBoundsFull(dStr){ const [y,m,d]=dStr.split('-').map(Number); return { startISO:new Date(y,m-1,d,0,0,0,0).toISOString(), endISO:new Date(y,m-1,d+1,0,0,0,0).toISOString() }; }
+
+    let app_iniciado = false;
+
+    // ---- Sesión ----
+    function app_render(session){
+      if (session && session.user){
+        $('login').style.display='none'; $('app').style.display='flex';
+        $('usuarioEmail').textContent = session.user.email||'';
+        if(!app_iniciado){ app_iniciado=true; app_initVistas(); }
+      } else { $('app').style.display='none'; $('login').style.display='flex'; }
+    }
+    async function auth_login(){
+      const email=$('email').value.trim(), password=$('password').value, aviso=$('avisoLogin');
+      aviso.className='aviso'; aviso.textContent='';
+      if(!email||!password){ aviso.className='aviso error'; aviso.textContent='Escribe tu correo y tu contraseña.'; return; }
+      $('btnLogin').disabled=true; $('btnLogin').textContent='Entrando…';
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      $('btnLogin').disabled=false; $('btnLogin').textContent='Entrar';
+      if(error){ aviso.className='aviso error'; aviso.textContent='No se pudo entrar. Revisa el correo y la contraseña.'; }
+    }
+    async function auth_logout(){ await sb.auth.signOut(); }
+
+    // ---- Navegación entre vistas ----
+    function app_initVistas(){
+      $('navTablero').addEventListener('click', ()=>app_verVista('tablero'));
+      $('navEstadisticas').addEventListener('click', ()=>app_verVista('estadisticas'));
+      rec_init();
+      est_init();
+      app_verVista('tablero');
+    }
+    function app_verVista(cual){
+      const esTab = cual==='tablero';
+      $('vistaTablero').classList.toggle('activa', esTab);
+      $('vistaEstadisticas').classList.toggle('activa', !esTab);
+      $('navTablero').classList.toggle('activo', esTab);
+      $('navEstadisticas').classList.toggle('activo', !esTab);
     }
 
-    function rec_dayBounds(dateStr) {
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const start = new Date(y, m - 1, d, 0, 0, 0, 0);
-      const end   = new Date(y, m - 1, d + 1, 0, 0, 0, 0);
-      return { startISO: start.toISOString(), endISO: end.toISOString() };
-    }
-
-    function rec_init() {
-      $('recFecha').value = rec_hoyStr();
+    // ---- Tablero diario (rec_) ----
+    function rec_init(){
+      $('recFecha').value = fechaStr(new Date());
       $('recFecha').addEventListener('change', rec_cargar);
       $('recRefrescar').addEventListener('click', rec_cargar);
       rec_cargar();
     }
-
-    async function rec_cargar() {
-      const cuerpo = $('recCuerpo');
-      const kpis = $('recKpis');
-      cuerpo.innerHTML = '<div class="cargando">Cargando citas…</div>';
-      kpis.innerHTML = '';
-
-      const { startISO, endISO } = rec_dayBounds($('recFecha').value);
-      const { data, error } = await sb
-        .from('recordatorios')
-        .select('*')
-        .gte('fecha_cita', startISO)
-        .lt('fecha_cita', endISO)
-        .order('fecha_cita', { ascending: true });
-
-      if (error) {
-        cuerpo.innerHTML = '<div class="error-box">No se pudieron cargar las citas. Reintenta con Actualizar.</div>';
-        return;
-      }
-      rec_renderKpis(data || []);
-      rec_renderTabla(data || []);
+    async function rec_cargar(){
+      const cuerpo=$('recCuerpo'), kpis=$('recKpis');
+      cuerpo.innerHTML='<div class="cargando">Cargando citas…</div>'; kpis.innerHTML='';
+      const { startISO, endISO } = dayBoundsFull($('recFecha').value);
+      const { data, error } = await sb.from('recordatorios').select('*').gte('fecha_cita',startISO).lt('fecha_cita',endISO).order('fecha_cita',{ascending:true});
+      if(error){ cuerpo.innerHTML='<div class="error-box">No se pudieron cargar las citas. Reintenta con Actualizar.</div>'; return; }
+      rec_renderKpis(data||[]); rec_renderTabla(data||[]);
     }
-
-    function rec_renderKpis(rows) {
-      const c = { confirmada: 0, pendiente: 0, enviado: 0, cambio: 0, no_asiste: 0, sin_respuesta: 0 };
-      rows.forEach(r => { if (c[r.estado] != null) c[r.estado]++; });
-      const sinResponder = c.pendiente + c.enviado;
-      const tarjetas = [
-        { n: rows.length,      l: 'Citas',         cls: '' },
-        { n: c.confirmada,     l: 'Confirmadas',   cls: 'verde' },
-        { n: sinResponder,     l: 'Sin responder', cls: 'azul' },
-        { n: c.cambio,         l: 'Cambios',       cls: 'ambar' },
-        { n: c.no_asiste,      l: 'No asisten',    cls: 'rojo' },
-        { n: c.sin_respuesta,  l: 'Sin respuesta', cls: '' }
+    function rec_renderKpis(rows){
+      const c={confirmada:0,pendiente:0,enviado:0,cambio:0,no_asiste:0,sin_respuesta:0};
+      rows.forEach(r=>{ if(c[r.estado]!=null) c[r.estado]++; });
+      const tarjetas=[
+        {n:rows.length,l:'Citas',cls:''},
+        {n:c.confirmada,l:'Confirmadas',cls:'verde'},
+        {n:c.pendiente+c.enviado,l:'Sin responder',cls:'azul'},
+        {n:c.cambio,l:'Cambios',cls:'ambar'},
+        {n:c.no_asiste,l:'No asisten',cls:'rojo'},
+        {n:c.sin_respuesta,l:'Sin respuesta',cls:''}
       ];
-      $('recKpis').innerHTML = tarjetas.map(t =>
-        `<div class="kpi ${t.cls}"><div class="n">${t.n}</div><div class="l">${esc(t.l)}</div></div>`
-      ).join('');
+      $('recKpis').innerHTML = tarjetas.map(t=>`<div class="kpi ${t.cls}"><div class="n">${t.n}</div><div class="l">${esc(t.l)}</div></div>`).join('');
     }
-
-    function rec_renderTabla(rows) {
-      const cuerpo = $('recCuerpo');
-      if (!rows.length) {
-        cuerpo.innerHTML = '<div class="vacio">No hay citas para este día. Cambia la fecha o carga citas en la tabla.</div>';
-        return;
-      }
-      const filas = rows.map(r => {
-        const hora = new Date(r.fecha_cita).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        const e = REC_ESTADOS[r.estado] || { label: r.estado, cls: 'b-pendiente' };
-        return `<tr>
-          <td class="hora">${esc(hora)}</td>
-          <td>${esc(r.paciente_nombre)}</td>
-          <td class="tel">${esc(r.paciente_telefono)}</td>
-          <td>${esc(r.doctor) || '—'}</td>
-          <td>${esc(r.tratamiento) || '—'}</td>
-          <td><span class="badge ${e.cls}">${esc(e.label)}</span></td>
-        </tr>`;
+    function rec_renderTabla(rows){
+      const cuerpo=$('recCuerpo');
+      if(!rows.length){ cuerpo.innerHTML='<div class="vacio">No hay citas para este día.</div>'; return; }
+      const filas=rows.map(r=>{
+        const hora=new Date(r.fecha_cita).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+        const e=REC_ESTADOS[r.estado]||{label:r.estado,cls:'b-pendiente'};
+        return `<tr><td class="hora">${esc(hora)}</td><td>${esc(r.paciente_nombre)}</td><td class="tel">${esc(r.paciente_telefono)}</td><td>${esc(r.doctor)||'—'}</td><td>${esc(r.tratamiento)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td></tr>`;
       }).join('');
-      cuerpo.innerHTML = `<table>
-        <thead><tr>
-          <th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Tratamiento</th><th>Estado</th>
-        </tr></thead>
-        <tbody>${filas}</tbody>
-      </table>`;
+      cuerpo.innerHTML=`<table><thead><tr><th>Hora</th><th>Paciente</th><th>Teléfono</th><th>Doctor</th><th>Tratamiento</th><th>Estado</th></tr></thead><tbody>${filas}</tbody></table>`;
     }
 
-    // ---------- Arranque ----------
-    async function app_init() {
+    // ---- Estadísticas (est_) ----
+    function est_init(){
+      const hoy=new Date();
+      const desde=new Date(); desde.setDate(hoy.getDate()-29);
+      $('estHasta').value=fechaStr(hoy);
+      $('estDesde').value=fechaStr(desde);
+      $('estRefrescar').addEventListener('click', est_cargar);
+    }
+    async function est_cargar(){
+      const kpis=$('estKpis'), docs=$('estDoctores');
+      kpis.innerHTML='<div class="cargando">Calculando…</div>'; docs.innerHTML='';
+      const { startISO, endISO } = rangeBounds($('estDesde').value, $('estHasta').value);
+      const { data, error } = await sb.from('recordatorios').select('*').gte('fecha_cita',startISO).lt('fecha_cita',endISO);
+      if(error){ kpis.innerHTML='<div class="error-box">No se pudieron cargar los datos.</div>'; return; }
+      est_render(data||[]);
+    }
+    function est_render(rows){
+      const total=rows.length;
+      const c={confirmada:0,cambio:0,no_asiste:0,sin_respuesta:0,pendiente:0,enviado:0};
+      rows.forEach(r=>{ if(c[r.estado]!=null) c[r.estado]++; });
+      // "con aviso" = se les llegó a mandar el 1er aviso
+      const conAviso = rows.filter(r=>r.enviado_at).length;
+      const respondidas = c.confirmada + c.cambio + c.no_asiste;
+      // tiempo medio de respuesta (enviado_at -> respondido_at) en horas
+      let sumaH=0, nH=0;
+      rows.forEach(r=>{ if(r.enviado_at && r.respondido_at){ const h=(new Date(r.respondido_at)-new Date(r.enviado_at))/3600000; if(h>=0){ sumaH+=h; nH++; } } });
+      const medioH = nH>0 ? (sumaH/nH) : null;
+      const medioTxt = medioH==null ? '—' : (medioH<1 ? Math.round(medioH*60)+' min' : medioH.toFixed(1)+' h');
+
+      const tarjetas=[
+        {n:total, l:'Citas con recordatorio', cls:'', sub:`${conAviso} con aviso enviado`},
+        {n:pct(c.confirmada,conAviso)+'%', l:'Tasa de confirmación', cls:'verde', sub:`${c.confirmada} confirmadas`},
+        {n:pct(respondidas,conAviso)+'%', l:'Tasa de respuesta', cls:'azul', sub:`${respondidas} respondieron`},
+        {n:pct(c.cambio,conAviso)+'%', l:'Piden cambio', cls:'ambar', sub:`${c.cambio} citas`},
+        {n:pct(c.no_asiste,conAviso)+'%', l:'No asisten', cls:'rojo', sub:`${c.no_asiste} citas`},
+        {n:pct(c.sin_respuesta,conAviso)+'%', l:'Sin respuesta', cls:'', sub:`${c.sin_respuesta} citas`},
+        {n:medioTxt, l:'Tiempo medio de respuesta', cls:'', sub:`sobre ${nH} respuestas`}
+      ];
+      $('estKpis').innerHTML = tarjetas.map(t=>`<div class="kpi ${t.cls}"><div class="n">${esc(t.n)}</div><div class="l">${esc(t.l)}</div><div class="sub">${esc(t.sub)}</div></div>`).join('');
+
+      // Por doctor
+      const porDoc={};
+      rows.forEach(r=>{
+        const d=r.doctor||'—';
+        if(!porDoc[d]) porDoc[d]={citas:0,conAviso:0,confirmada:0,no_asiste:0,sin_respuesta:0};
+        porDoc[d].citas++;
+        if(r.enviado_at) porDoc[d].conAviso++;
+        if(r.estado==='confirmada') porDoc[d].confirmada++;
+        if(r.estado==='no_asiste') porDoc[d].no_asiste++;
+        if(r.estado==='sin_respuesta') porDoc[d].sin_respuesta++;
+      });
+      const docs=$('estDoctores');
+      const claves=Object.keys(porDoc).sort((a,b)=>porDoc[b].citas-porDoc[a].citas);
+      if(!claves.length){ docs.innerHTML='<div class="vacio">No hay datos en este rango.</div>'; return; }
+      const filas=claves.map(d=>{
+        const x=porDoc[d];
+        return `<tr><td>${esc(d)}</td><td class="num">${x.citas}</td><td class="num">${x.confirmada}</td><td class="num">${pct(x.confirmada,x.conAviso)}%</td><td class="num">${x.no_asiste}</td><td class="num">${x.sin_respuesta}</td></tr>`;
+      }).join('');
+      docs.innerHTML=`<table><thead><tr><th>Doctor</th><th class="num">Citas</th><th class="num">Confirm.</th><th class="num">% Confirm.</th><th class="num">No asisten</th><th class="num">Sin resp.</th></tr></thead><tbody>${filas}</tbody></table>`;
+    }
+
+    // ---- Arranque ----
+    async function app_init(){
       const { data } = await sb.auth.getSession();
       app_render(data.session);
-      sb.auth.onAuthStateChange((_event, session) => app_render(session));
+      sb.auth.onAuthStateChange((_e,session)=>app_render(session));
       $('btnLogin').addEventListener('click', auth_login);
       $('btnSalir').addEventListener('click', auth_logout);
-      $('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') auth_login(); });
+      $('password').addEventListener('keydown', (e)=>{ if(e.key==='Enter') auth_login(); });
     }
     app_init();
   </script>
