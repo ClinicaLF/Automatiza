@@ -40,10 +40,16 @@
     .btn-salir { background:transparent; border:1px solid #5A6770; color:#dfe4e7; padding:6px 12px; border-radius:7px; font-size:13px; }
     .btn-salir:hover { background:#3d4953; }
 
-    .nav { background:#2c363e; padding:0 22px; display:flex; gap:4px; flex-wrap:wrap; }
-    .nav button { background:transparent; border:none; color:#aab3ba; padding:13px 18px; font-size:14px; font-weight:600; border-bottom:3px solid transparent; }
-    .nav button:hover { color:#fff; }
-    .nav button.activo { color:#fff; border-bottom-color:var(--madera); }
+    .nav-modulos { background:#2c363e; padding:0 22px; display:flex; gap:4px; flex-wrap:wrap; }
+    .nav-modulos .mod { background:transparent; border:none; color:#aab3ba; padding:14px 18px; font-size:14.5px; font-weight:700; border-bottom:3px solid transparent; }
+    .nav-modulos .mod:hover:not(:disabled) { color:#fff; }
+    .nav-modulos .mod.activo { color:#fff; border-bottom-color:var(--madera); }
+    .nav-modulos .mod:disabled { color:#7c858c; cursor:default; }
+    .pronto { font-size:10px; background:#5A6770; color:#dfe4e7; padding:2px 7px; border-radius:999px; margin-left:7px; vertical-align:middle; letter-spacing:.04em; font-weight:600; }
+    .nav-sub { background:var(--sand-2); padding:0 22px; display:flex; gap:4px; flex-wrap:wrap; border-bottom:1px solid var(--gris-claro); }
+    .nav-sub button { background:transparent; border:none; color:var(--gris); padding:11px 16px; font-size:13.5px; font-weight:600; border-bottom:3px solid transparent; }
+    .nav-sub button:hover { color:var(--azul); }
+    .nav-sub button.activo { color:var(--azul); border-bottom-color:var(--madera); }
 
     .contenido { flex:1; padding:28px 22px; max-width:1100px; width:100%; margin:0 auto; }
     .vista { display:none; }
@@ -149,11 +155,17 @@
       <div class="usuario"><span id="usuarioEmail"></span><button id="btnSalir" class="btn-salir">Salir</button></div>
     </header>
 
-    <nav class="nav">
+    <nav class="nav-modulos">
+      <button id="modRecordatorios" class="mod activo">Recordatorio de citas</button>
+      <button class="mod" disabled>Encuestas satisfacción <span class="pronto">pronto</span></button>
+      <button class="mod" disabled>Reseñas <span class="pronto">pronto</span></button>
+      <button id="modPlantillas" class="mod">Plantillas</button>
+    </nav>
+
+    <nav class="nav-sub" id="navSub">
       <button id="navImportar" class="activo">Importar citas</button>
       <button id="navTablero">Tablero del día</button>
       <button id="navEstadisticas">Estadísticas</button>
-      <button id="navPlantillas">Plantillas</button>
     </nav>
 
     <main class="contenido">
@@ -222,7 +234,7 @@
 
     </main>
 
-    <footer>Automatiza · v0.6.1 — importar + tablero (filtros en cabecera, duración, código) + estadísticas + plantillas</footer>
+    <footer>Automatiza · v0.7.0 — módulos: Recordatorio de citas (importar, tablero, estadísticas) + Plantillas</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -268,17 +280,24 @@
     async function auth_logout(){ await sb.auth.signOut(); }
 
     function app_initVistas(){
-      $('navTablero').addEventListener('click', ()=>app_verVista('tablero'));
+      $('modRecordatorios').addEventListener('click', ()=>app_verModulo('recordatorios'));
+      $('modPlantillas').addEventListener('click', ()=>app_verModulo('plantillas'));
       $('navImportar').addEventListener('click', ()=>app_verVista('importar'));
+      $('navTablero').addEventListener('click', ()=>app_verVista('tablero'));
       $('navEstadisticas').addEventListener('click', ()=>app_verVista('estadisticas'));
-      $('navPlantillas').addEventListener('click', ()=>app_verVista('plantillas'));
       rec_init(); imp_init(); est_init(); pla_init();
-      app_verVista('importar');
+      app_verModulo('recordatorios');
+    }
+    function app_verModulo(mod){
+      $('modRecordatorios').classList.toggle('activo', mod==='recordatorios');
+      $('modPlantillas').classList.toggle('activo', mod==='plantillas');
+      if(mod==='plantillas'){ $('navSub').style.display='none'; app_verVista('plantillas'); }
+      else { $('navSub').style.display=''; app_verVista('importar'); }
     }
     function app_verVista(cual){
       ['importar','tablero','estadisticas','plantillas'].forEach(v=>{
         $('vista'+cap(v)).classList.toggle('activa', v===cual);
-        $('nav'+cap(v)).classList.toggle('activo', v===cual);
+        const nb=$('nav'+cap(v)); if(nb) nb.classList.toggle('activo', v===cual);
       });
     }
 
