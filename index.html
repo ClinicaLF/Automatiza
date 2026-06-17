@@ -139,6 +139,17 @@
     .btn-as.a-si.on { background:#f4f8e8; color:#5a7000; border-color:#cdd9a8; }
     .btn-as.a-no.on { background:#fbeae8; color:var(--rojo); border-color:#eccfca; }
     .btn-as:disabled { opacity:.5; cursor:default; }
+    .lnk-edit { background:none; border:none; cursor:pointer; font-size:13px; opacity:.45; padding:1px 4px; }
+    .lnk-edit:hover { opacity:1; }
+    .modal-bg { position:fixed; inset:0; background:rgba(51,63,72,.45); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; }
+    .modal { background:#fff; border-radius:14px; padding:24px; width:100%; max-width:430px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+    .modal h3 { margin:0 0 16px; font-family:Georgia,serif; color:var(--azul); font-size:20px; }
+    .modal .lbl { display:block; font-size:12.5px; color:var(--gris); margin-bottom:4px; font-weight:600; }
+    .f-modal { width:100%; padding:9px 11px; font-size:14px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); margin-bottom:12px; background:#fff; }
+    .f-modal:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .modal-row { display:flex; gap:12px; }
+    .modal-row > div { flex:1; }
+    .modal-acciones { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
 
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
     @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
@@ -182,7 +193,7 @@
       <section id="vistaTablero" class="vista">
         <div class="head">
           <div><p class="kicker">Recordatorios WhatsApp</p><h2>Tablero del día</h2></div>
-          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="fLimpiar" class="btn-sec">Limpiar filtros</button><button id="recVaciar" class="btn-sec btn-peligro">Vaciar día</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
+          <div class="controls"><input id="recFecha" type="date"><button id="recRefrescar" class="btn-sec">Actualizar</button><button id="recNueva" class="btn-sec">+ Añadir cita</button><button id="fLimpiar" class="btn-sec">Limpiar filtros</button><button id="recVaciar" class="btn-sec btn-peligro">Vaciar día</button><button id="recProbar" class="btn-sec" style="border-color:var(--madera);color:var(--azul);font-weight:600">🧪 Probar a mi móvil</button></div>
         </div>
         <div id="recProbarMsg" style="margin:0 0 14px;font-size:14px;line-height:1.4"></div>
         <div id="recKpis" class="kpis"></div>
@@ -247,7 +258,30 @@
 
     </main>
 
-    <footer>Automatiza · v0.8.0 — Recordatorio de citas con asistencia (marcar asistidas/faltas) + Plantillas</footer>
+    <div id="citaModal" class="modal-bg" style="display:none">
+      <div class="modal">
+        <h3 id="citaModalTitulo">Editar cita</h3>
+        <label class="lbl">Paciente</label>
+        <input id="cmNombre" class="f-modal" placeholder="Nombre del paciente">
+        <label class="lbl">Teléfono</label>
+        <input id="cmTel" class="f-modal" placeholder="6XXXXXXXX o 34XXXXXXXXX">
+        <div class="modal-row">
+          <div><label class="lbl">Fecha</label><input id="cmFecha" type="date" class="f-modal"></div>
+          <div><label class="lbl">Hora</label><input id="cmHora" type="time" class="f-modal"></div>
+        </div>
+        <div class="modal-row">
+          <div><label class="lbl">Duración (min)</label><input id="cmDur" type="number" min="0" class="f-modal" placeholder="30"></div>
+          <div><label class="lbl">Profesional</label><input id="cmDoctor" class="f-modal" placeholder="Marina, Laura…"></div>
+        </div>
+        <div id="cmMsg" class="resultado"></div>
+        <div class="modal-acciones">
+          <button id="cmCancelar" class="btn-sec">Cancelar</button>
+          <button id="cmGuardar" class="btn-primario" style="max-width:160px">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>Automatiza · v0.9.0 — asistencia desmarcable + editar y añadir citas + Plantillas</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -323,6 +357,10 @@
       $('recProbar').addEventListener('click', rec_probar);
       $('recVaciar').addEventListener('click', rec_vaciar);
       $('recMarcarTodas').addEventListener('click', rec_marcarTodas);
+      $('recNueva').addEventListener('click', ()=>rec_abrirModal(null));
+      $('cmGuardar').addEventListener('click', rec_guardarCita);
+      $('cmCancelar').addEventListener('click', rec_cerrarModal);
+      $('citaModal').addEventListener('click', (e)=>{ if(e.target.id==='citaModal') rec_cerrarModal(); });
       $('recCuerpo').addEventListener('click', rec_clicTabla);
       $('recCuerpo').addEventListener('input', rec_aplicarFiltros);
       $('recCuerpo').addEventListener('change', rec_aplicarFiltros);
@@ -463,7 +501,7 @@
         +`<button class="btn-as a-si ${as==='asistio'?'on':''}" data-act="asist" data-id="${esc(r.cita_id)}" data-val="asistio">Asistió</button>`
         +`<button class="btn-as a-no ${as==='no_asistio'?'on':''}" data-act="asist" data-id="${esc(r.cita_id)}" data-val="no_asistio">Faltó</button>`
         +`</div>`;
-      return `<tr><td class="hora">${esc(hora)}</td><td class="num">${dur}</td><td class="codigo">${esc(rec_codigo(r.cita_id))}</td><td>${esc(r.paciente_nombre)}${repe}</td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td><td>${asistCell}</td></tr>`;
+      return `<tr><td class="hora">${esc(hora)}</td><td class="num">${dur}</td><td class="codigo">${esc(rec_codigo(r.cita_id))}</td><td>${esc(r.paciente_nombre)}${repe} <button class="lnk-edit" data-act="editar" data-id="${esc(r.cita_id)}" title="Editar paciente">✏️</button></td><td class="tel">${tel}</td><td>${esc(r.doctor)||'—'}</td><td><span class="badge ${e.cls}">${esc(e.label)}</span></td><td>${env}</td><td>${asistCell}</td></tr>`;
     }
     async function rec_clicTabla(ev){
       const env=ev.target.closest('button[data-act="env"]');
@@ -478,12 +516,16 @@
       const as=ev.target.closest('button[data-act="asist"]');
       if(as){
         const id=as.getAttribute('data-id'), val=as.getAttribute('data-val');
+        const row=rec_rows.find(r=>r.cita_id===id);
+        const nuevo = (row && row.asistencia===val) ? 'pendiente' : val;   // pulsar el activo => desmarca
         as.disabled=true;
-        const { error } = await sb.from('recordatorios').update({ asistencia: val }).eq('cita_id', id);
+        const { error } = await sb.from('recordatorios').update({ asistencia: nuevo }).eq('cita_id', id);
         if(error){ as.disabled=false; alert('No se pudo marcar la asistencia: '+(error.message||error)); return; }
-        const row=rec_rows.find(r=>r.cita_id===id); if(row) row.asistencia=val;
+        if(row) row.asistencia=nuevo;
         rec_aplicarFiltros(); return;
       }
+      const ed=ev.target.closest('button[data-act="editar"]');
+      if(ed){ rec_abrirModal(ed.getAttribute('data-id')); return; }
     }
     async function rec_marcarTodas(){
       if(!rec_rows.length) return;
@@ -495,6 +537,63 @@
       if(error){ alert('No se pudo marcar: '+(error.message||error)); return; }
       rec_rows.forEach(r=>r.asistencia='asistio');
       rec_aplicarFiltros();
+    }
+    function rec_normTel(raw){ let d=String(raw==null?'':raw).replace(/\D/g,''); if(!d) return ''; if(d.startsWith('0034')) d=d.slice(2); if(d.length===9) d='34'+d; return d; }
+    const rec_telOk=(t)=>/^34[0-9]{9}$/.test(t);
+    let cm_editId=null;
+    function rec_abrirModal(id){
+      cm_editId = id || null;
+      if(id){
+        const r=rec_rows.find(x=>x.cita_id===id)||{};
+        $('citaModalTitulo').textContent='Editar cita';
+        $('cmNombre').value=r.paciente_nombre||'';
+        $('cmTel').value=r.paciente_telefono||'';
+        const d=r.fecha_cita?new Date(r.fecha_cita):null;
+        $('cmFecha').value = d?fechaStr(d):($('recFecha').value||'');
+        $('cmHora').value = d?d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'';
+        $('cmDur').value = (r.duracion!=null?r.duracion:'');
+        $('cmDoctor').value = r.doctor||'';
+      } else {
+        $('citaModalTitulo').textContent='Nueva cita';
+        $('cmNombre').value=''; $('cmTel').value='';
+        $('cmFecha').value=$('recFecha').value||fechaStr(new Date());
+        $('cmHora').value=''; $('cmDur').value=''; $('cmDoctor').value='';
+      }
+      $('cmMsg').textContent='';
+      $('citaModal').style.display='flex';
+    }
+    function rec_cerrarModal(){ $('citaModal').style.display='none'; }
+    async function rec_guardarCita(){
+      const nombre=$('cmNombre').value.trim();
+      const telRaw=$('cmTel').value.trim();
+      const tel=rec_normTel(telRaw);
+      const fecha=$('cmFecha').value, hora=$('cmHora').value;
+      const dur=parseInt($('cmDur').value,10);
+      const doctor=$('cmDoctor').value.trim();
+      const msg=$('cmMsg'); msg.style.color='var(--rojo)';
+      if(!nombre || !fecha || !hora){ msg.textContent='Faltan datos: nombre, fecha y hora son obligatorios.'; return; }
+      if(telRaw && !rec_telOk(tel)){ msg.textContent='El teléfono no parece válido (móvil español de 9 dígitos).'; return; }
+      const fecha_cita=`${fecha}T${hora}:00+02:00`;
+      const btn=$('cmGuardar'); btn.disabled=true; const t=btn.textContent; btn.textContent='Guardando…';
+      try{
+        if(cm_editId){
+          const { error } = await sb.from('recordatorios').update({
+            paciente_nombre:nombre, paciente_telefono:tel||null, fecha_cita,
+            duracion:isNaN(dur)?null:dur, doctor:doctor||null
+          }).eq('cita_id', cm_editId);
+          if(error) throw error;
+        } else {
+          const { error } = await sb.from('recordatorios').insert({
+            cita_id:'MAN-'+Date.now(), paciente_nombre:nombre, paciente_telefono:tel||null,
+            doctor:doctor||null, duracion:isNaN(dur)?null:dur, fecha_cita,
+            estado:'pendiente', enviar:rec_telOk(tel), asistencia:'pendiente'
+          });
+          if(error) throw error;
+        }
+        rec_cerrarModal();
+        rec_cargar();
+      }catch(e){ msg.textContent='No se pudo guardar: '+(e.message||e); }
+      btn.disabled=false; btn.textContent=t;
     }
 
     // ---- Estadísticas (est_) ----
