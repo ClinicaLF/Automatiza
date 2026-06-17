@@ -151,8 +151,45 @@
     .modal-row > div { flex:1; }
     .modal-acciones { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
 
+    /* Plantillas — gestor */
+    .pla-ed-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .pla-ed-head h3 { margin:0; font-family:Georgia,serif; color:var(--azul); font-size:20px; }
+    .pla-grid { display:grid; grid-template-columns:1fr 340px; gap:26px; align-items:start; }
+    .sel { width:100%; padding:9px 11px; font-size:14px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); background:#fff; }
+    .sel:focus { outline:none; border-color:var(--azul-medio); box-shadow:0 0 0 3px rgba(90,103,112,.15); }
+    .cuenta { float:right; font-size:11.5px; color:var(--gris); font-weight:400; }
+    .var-chips { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:4px 0 8px; }
+    .chip-lbl { font-size:12px; color:var(--gris); margin-right:2px; }
+    .chip { background:var(--sand-2); border:1px solid var(--gris-claro); color:var(--azul-medio); padding:5px 11px; border-radius:999px; font-size:12.5px; font-weight:600; }
+    .chip:hover { background:#e3dccd; }
+    .cta-row { display:grid; grid-template-columns:110px 1fr 1.2fr; gap:8px; margin-bottom:8px; align-items:center; }
+    .cta-row select, .cta-row input { padding:8px 10px; font-size:13.5px; border:1px solid var(--gris-claro); border-radius:8px; color:var(--azul); background:#fff; min-width:0; }
+    .acc-btns { display:flex; gap:6px; }
+    .acc { border:1px solid var(--gris-claro); border-radius:7px; padding:5px 10px; font-size:12.5px; font-weight:600; background:#fff; color:var(--azul-medio); white-space:nowrap; }
+    .acc:hover { background:var(--sand-2); }
+    .acc.del { color:var(--rojo); border-color:#eccfca; }
+    .acc.del:hover { background:#fbeae8; }
+    .b-aprobada { background:#eaf2d6; color:#5a7000; }
+    .b-revision { background:#e4e9ed; color:var(--azul-medio); }
+    .b-rechazada { background:#fbeae8; color:var(--rojo); }
+    .b-borrador { background:var(--gris-claro); color:var(--azul-medio); }
+    .prev-lbl { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--gris); font-weight:700; margin:0 0 10px; }
+    .wa-screen { background:#e7ded6; border-radius:12px; padding:18px 14px; min-height:180px; }
+    .wa-bubble { background:#fff; border-radius:8px; border-top-left-radius:0; padding:8px 9px 5px; box-shadow:0 1px 1px rgba(0,0,0,.12); max-width:280px; font-size:13.5px; line-height:1.45; color:#111; }
+    .wa-header { font-weight:700; margin-bottom:4px; white-space:pre-wrap; word-break:break-word; }
+    .wa-header:empty { display:none; }
+    .wa-body { white-space:pre-wrap; word-break:break-word; }
+    .wa-body:empty::before { content:'(escribe el cuerpo del mensaje…)'; color:#b6bbbf; }
+    .wa-footer { color:#8a8f93; font-size:11.5px; margin-top:5px; white-space:pre-wrap; word-break:break-word; }
+    .wa-footer:empty { display:none; }
+    .wa-time { text-align:right; font-size:10.5px; color:#9aa0a4; margin-top:2px; }
+    .wa-btns { max-width:280px; }
+    .wa-btns:empty { display:none; }
+    .wa-btn { background:#fff; color:#1c8bbf; text-align:center; padding:9px; border-radius:8px; margin-top:5px; font-size:13.5px; font-weight:500; box-shadow:0 1px 1px rgba(0,0,0,.1); }
+
     footer { text-align:center; padding:16px; font-size:11.5px; color:var(--gris); }
     @media (max-width:560px){ .head{align-items:stretch;} .controls{width:100%;} .botones-grid{grid-template-columns:1fr;} }
+    @media (max-width:820px){ .pla-grid{grid-template-columns:1fr;} .pla-preview{max-width:340px;} .cta-row{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
@@ -234,25 +271,124 @@
       <section id="vistaPlantillas" class="vista">
         <div class="head">
           <div><p class="kicker">WhatsApp</p><h2>Plantillas</h2></div>
-          <div class="controls"><button id="plaRefrescar" class="btn-sec">Actualizar</button></div>
+          <div class="controls">
+            <button id="plaNueva" class="btn-primario" style="width:auto;padding:10px 18px;margin-top:0">+ Nueva plantilla</button>
+            <button id="plaRefrescar" class="btn-sec">Actualizar</button>
+          </div>
         </div>
         <div id="plaNotice" class="notice"></div>
-        <div class="tabla-wrap" style="margin-bottom:22px"><div id="plaLista" class="scroll-x"></div></div>
 
-        <div class="editor">
-          <div class="pla-sel">
-            <button id="plaSelPrimer" class="activo">Primer aviso</button>
-            <button id="plaSelSegundo">Segundo aviso</button>
+        <div id="plaListaWrap" class="tabla-wrap"><div id="plaLista" class="scroll-x"></div></div>
+
+        <div id="plaEditor" class="editor" style="display:none;margin-top:22px">
+          <div class="pla-ed-head">
+            <h3 id="plaEdTitulo">Nueva plantilla</h3>
+            <button id="plaCerrar" class="btn-sec">Cerrar</button>
           </div>
-          <p id="plaEstadoActual" class="sub-est"></p>
-          <label class="lbl">Texto del mensaje</label>
-          <p class="ayuda">Variables disponibles: {{1}} nombre · {{2}} fecha · {{3}} hora · {{4}} doctor. Importante: no pongas una variable justo al principio ni al final del texto (Meta lo rechaza).</p>
-          <textarea id="plaBody" rows="4"></textarea>
-          <label class="lbl">Botones de respuesta rápida</label>
-          <div class="botones-grid"><input id="plaBtn1"><input id="plaBtn2"><input id="plaBtn3"></div>
-          <p class="ayuda">El webhook reconoce las respuestas por palabras clave: mantén que los botones contengan "confirm", "cambi" y "no podré / no asist", o el cambio de estado no funcionará.</p>
-          <button id="plaEnviar" class="btn-primario" style="max-width:280px">Enviar a revisión a Meta</button>
-          <div id="plaResultado" class="resultado"></div>
+
+          <div class="var-chips">
+            <span class="chip-lbl">Empezar desde:</span>
+            <button type="button" class="chip" data-preset="primer">Recordatorio · 1er aviso</button>
+            <button type="button" class="chip" data-preset="segundo">Recordatorio · 2º aviso</button>
+          </div>
+
+          <div class="pla-grid">
+            <div class="pla-form">
+              <label class="lbl">Nombre de la plantilla</label>
+              <input id="pfNombre" class="f-modal" placeholder="recordatorio_cita" style="margin-bottom:4px">
+              <p class="ayuda" style="margin-top:0">Solo minúsculas, números y guion bajo. Sin espacios ni acentos.</p>
+
+              <div class="modal-row">
+                <div>
+                  <label class="lbl">Categoría</label>
+                  <select id="pfCategoria" class="sel">
+                    <option value="UTILITY">Utility (avisos / transaccional)</option>
+                    <option value="MARKETING">Marketing (promociones)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="lbl">Idioma</label>
+                  <select id="pfIdioma" class="sel">
+                    <option value="es">Español (es)</option>
+                    <option value="es_ES">Español de España (es_ES)</option>
+                  </select>
+                </div>
+              </div>
+
+              <label class="lbl">Cabecera (opcional)</label>
+              <select id="pfHeaderTipo" class="sel">
+                <option value="">Sin cabecera</option>
+                <option value="TEXT">Texto</option>
+              </select>
+              <input id="pfHeaderTexto" class="f-modal" placeholder="Ej: Recordatorio de su cita" style="display:none;margin-top:8px" maxlength="60">
+
+              <label class="lbl">Cuerpo del mensaje <span id="pfBodyCount" class="cuenta">0/1024</span></label>
+              <div class="var-chips">
+                <span class="chip-lbl">Insertar:</span>
+                <button type="button" class="chip" data-var="{{1}}">{{1}} nombre</button>
+                <button type="button" class="chip" data-var="{{2}}">{{2}} fecha</button>
+                <button type="button" class="chip" data-var="{{3}}">{{3}} hora</button>
+                <button type="button" class="chip" data-var="{{4}}">{{4}} doctor</button>
+              </div>
+              <textarea id="pfBody" rows="6" maxlength="1024"></textarea>
+              <p class="ayuda">No pongas una variable justo al principio ni al final del texto (Meta lo rechaza). Para negrita usa *asteriscos*.</p>
+
+              <label class="lbl">Pie de página (opcional) <span id="pfFooterCount" class="cuenta">0/60</span></label>
+              <input id="pfFooter" class="f-modal" placeholder="Ej: Centro Odontológico Laura Fernández" maxlength="60">
+
+              <label class="lbl">Botones (opcional)</label>
+              <select id="pfBtnTipo" class="sel">
+                <option value="">Sin botones</option>
+                <option value="QUICK_REPLY">Respuesta rápida (Confirmar / Cambiar / No asistiré)</option>
+                <option value="CTA">Acción (Llamar / Abrir enlace)</option>
+              </select>
+              <p class="ayuda">Meta no permite mezclar respuesta rápida y acción en la misma plantilla.</p>
+
+              <div id="pfBtnQuick" style="display:none">
+                <div class="botones-grid">
+                  <input id="pfQr1" placeholder="Confirmar">
+                  <input id="pfQr2" placeholder="Necesito cambiarla">
+                  <input id="pfQr3" placeholder="No podré asistir">
+                </div>
+                <p class="ayuda">El webhook detecta el estado por las palabras "confirm", "cambi" y "no podré / no asist". Mantén esas raíces dentro del texto del botón o no cambiará el estado.</p>
+              </div>
+
+              <div id="pfBtnCta" style="display:none">
+                <div class="cta-row">
+                  <select class="cta-sub"><option value="PHONE_NUMBER">Llamar</option><option value="URL">Enlace</option></select>
+                  <input class="cta-text" placeholder="Texto del botón">
+                  <input class="cta-val" placeholder="+34667445007 o https://…">
+                </div>
+                <div class="cta-row">
+                  <select class="cta-sub"><option value="">— (2º botón, opcional)</option><option value="PHONE_NUMBER">Llamar</option><option value="URL">Enlace</option></select>
+                  <input class="cta-text" placeholder="Texto del botón">
+                  <input class="cta-val" placeholder="opcional">
+                </div>
+              </div>
+
+              <label class="lbl" id="pfEjLbl" style="display:none">Valores de ejemplo (Meta los exige para revisar la plantilla)</label>
+              <div id="pfEjemplos" class="botones-grid" style="display:none"></div>
+
+              <div id="plaResultado" class="resultado"></div>
+              <div class="modal-acciones" style="margin-top:18px">
+                <button id="pfBorrador" class="btn-sec">Guardar borrador</button>
+                <button id="pfPublicar" class="btn-primario" style="width:auto;padding:10px 18px;margin-top:0">Guardar y publicar</button>
+              </div>
+            </div>
+
+            <div class="pla-preview">
+              <p class="prev-lbl">Vista previa</p>
+              <div class="wa-screen">
+                <div class="wa-bubble">
+                  <div id="pvHeader" class="wa-header"></div>
+                  <div id="pvBody" class="wa-body"></div>
+                  <div id="pvFooter" class="wa-footer"></div>
+                  <div class="wa-time">18:24</div>
+                </div>
+                <div id="pvBtns" class="wa-btns"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -281,7 +417,7 @@
       </div>
     </div>
 
-    <footer>Automatiza · v0.9.0 — asistencia desmarcable + editar y añadir citas + Plantillas</footer>
+    <footer>Automatiza · v0.10.0 — gestor de plantillas (editor + vista previa + publicar a Meta)</footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -640,73 +776,260 @@
     }
 
     // ---- Plantillas (pla_) ----
-    const PLA_DEFS = {
-      primer:  { name:"recordatorio_cita",   titulo:"Primer aviso",  body:"Hola {{1}}, le recordamos su cita en el Centro Odontológico Laura Fernández el {{2}} a las {{3}} con {{4}}. Por favor, confírmenos si podrá asistir.", botones:["Confirmar","Necesito cambiarla","No podré asistir"] },
-      segundo: { name:"recordatorio_cita_2", titulo:"Segundo aviso", body:"Hola {{1}}, aún no hemos recibido su confirmación para la cita del {{2}} a las {{3}} con {{4}}. ¿Podrá acudir? Gracias.", botones:["Confirmar","Necesito cambiarla","No podré asistir"] }
+    const PLA_EJ_DEF = ['Carmen','16/06/2026','09:30','Dra. Fernández'];
+    const PLA_VAR_NOMBRES = ['nombre','fecha','hora','doctor'];
+    const PLA_PRESETS = {
+      primer: { name:'recordatorio_cita', category:'UTILITY', language:'es',
+        header_type:null, header_text:null,
+        body_text:'Hola {{1}}, le recordamos su cita en el Centro Odontológico Laura Fernández el {{2}} a las {{3}} con {{4}}. Por favor, confírmenos si podrá asistir.',
+        footer_text:null,
+        button_type:'QUICK_REPLY', buttons:[{text:'Confirmar'},{text:'Necesito cambiarla'},{text:'No podré asistir'}],
+        ejemplo:PLA_EJ_DEF.slice() },
+      segundo: { name:'recordatorio_cita_2', category:'UTILITY', language:'es',
+        header_type:null, header_text:null,
+        body_text:'Hola {{1}}, aún no hemos recibido su confirmación para la cita del {{2}} a las {{3}} con {{4}}. ¿Podrá acudir? Gracias.',
+        footer_text:null,
+        button_type:'QUICK_REPLY', buttons:[{text:'Confirmar'},{text:'Necesito cambiarla'},{text:'No podré asistir'}],
+        ejemplo:PLA_EJ_DEF.slice() }
     };
-    const PLA_EJEMPLO = ["Carmen","16/06/2026","09:30","Dra. Fernández"];
-    let pla_meta = {};
-    let pla_actual = 'primer';
+    let pla_lista = [];
+    let pla_editId = null;
+    let pla_ejemplo = PLA_EJ_DEF.slice();
 
     function pla_init(){
-      $('plaSelPrimer').addEventListener('click', ()=>pla_seleccionar('primer'));
-      $('plaSelSegundo').addEventListener('click', ()=>pla_seleccionar('segundo'));
+      $('plaNueva').addEventListener('click', ()=>pla_abrirEditor(null));
+      $('plaCerrar').addEventListener('click', pla_cerrarEditor);
       $('plaRefrescar').addEventListener('click', pla_cargar);
-      $('plaEnviar').addEventListener('click', pla_guardar);
+      $('pfBorrador').addEventListener('click', ()=>pla_guardar(false));
+      $('pfPublicar').addEventListener('click', ()=>pla_guardar(true));
+      $('pfHeaderTipo').addEventListener('change', pla_syncHeader);
+      $('pfBtnTipo').addEventListener('change', pla_syncBotones);
+      document.querySelectorAll('#plaEditor .chip[data-var]').forEach(b=> b.addEventListener('click', ()=>pla_insertVar(b.dataset.var)));
+      document.querySelectorAll('#plaEditor .chip[data-preset]').forEach(b=> b.addEventListener('click', ()=>pla_cargarPreset(b.dataset.preset)));
+      ['pfHeaderTexto','pfFooter','pfQr1','pfQr2','pfQr3'].forEach(id=> $(id).addEventListener('input', pla_preview));
+      $('pfBody').addEventListener('input', ()=>{ pla_syncEjemplos(); pla_preview(); });
+      $('pfBtnCta').querySelectorAll('select,input').forEach(el=>{ el.addEventListener('input', pla_preview); el.addEventListener('change', pla_preview); });
       pla_cargar();
     }
+
+    function pla_numVars(s){ const m=(s||'').match(/\{\{\s*(\d+)\s*\}\}/g)||[]; let max=0; m.forEach(x=>{ const n=parseInt(x.replace(/[^\d]/g,''),10); if(n>max)max=n; }); return max; }
+
     async function pla_cargar(){
-      $('plaNotice').textContent='Consultando Meta…';
-      $('plaLista').innerHTML='';
-      pla_meta={};
-      try {
+      $('plaNotice').textContent='Cargando plantillas…';
+      $('plaLista').innerHTML='<div class="cargando">Cargando…</div>';
+      try{
         const { data, error } = await sb.functions.invoke('plantillas-', { body:{ accion:'listar' } });
-        if (error) { $('plaNotice').innerHTML='<span class="warn">No se pudo consultar Meta todavía.</span>'; }
-        else if (data && data.configurado===false) {
-          $('plaNotice').innerHTML='<span class="warn">Meta aún no está conectado. Puedes preparar y editar el texto aquí abajo; cuando conectemos Meta, "Enviar a revisión" creará o actualizará las plantillas de verdad.</span>';
-        } else if (data && data.plantillas) {
-          (data.plantillas||[]).forEach(p=>{ pla_meta[p.name]=p; });
-          pla_renderLista(data.plantillas||[]);
-          $('plaNotice').textContent='';
-        } else { $('plaNotice').innerHTML='<span class="warn">Respuesta inesperada de la función.</span>'; }
-      } catch(e){ $('plaNotice').innerHTML='<span class="warn">Meta aún no está conectado.</span>'; }
-      pla_seleccionar(pla_actual);
+        if(error) throw error;
+        pla_lista = (data && data.plantillas) || [];
+        if(data && data.configurado===false){
+          $('plaNotice').innerHTML='<span class="warn">Meta aún no está conectado (falta el WA_TOKEN en Supabase). Puedes crear y guardar borradores sin problema; el botón "Guardar y publicar" enviará a Meta en cuanto pongas el token.</span>';
+        } else { $('plaNotice').textContent=''; }
+        pla_renderLista();
+      }catch(e){
+        $('plaNotice').innerHTML='<span class="warn">No se pudo contactar con la función plantillas-. Revisa que está desplegada en Supabase.</span>';
+        pla_lista=[]; pla_renderLista();
+      }
     }
-    function pla_renderLista(lista){
-      if(!lista.length){ $('plaLista').innerHTML='<div class="vacio">Aún no hay plantillas creadas en Meta.</div>'; return; }
-      const badge=(s)=>{ const m={APPROVED:['Aprobada','b-confirmada'],PENDING:['En revisión','b-enviado'],REJECTED:['Rechazada','b-no_asiste']}; const it=m[s]||[s,'b-pendiente']; return `<span class="badge ${it[1]}">${esc(it[0])}</span>`; };
-      $('plaLista').innerHTML=`<table><thead><tr><th>Plantilla</th><th>Idioma</th><th>Categoría</th><th>Estado</th></tr></thead><tbody>${lista.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.language)}</td><td>${esc(p.category)}</td><td>${badge(p.status)}</td></tr>`).join('')}</tbody></table>`;
+
+    function pla_badge(est){
+      const m={ APPROVED:['Aprobada','b-aprobada'], PENDING:['En revisión','b-revision'], REJECTED:['Rechazada','b-rechazada'], BORRADOR:['Borrador','b-borrador'] };
+      const it=m[est]||[est||'Borrador','b-borrador'];
+      return `<span class="badge ${it[1]}">${esc(it[0])}</span>`;
     }
-    function pla_seleccionar(cual){
-      pla_actual=cual;
-      $('plaSelPrimer').classList.toggle('activo', cual==='primer');
-      $('plaSelSegundo').classList.toggle('activo', cual==='segundo');
-      const def=PLA_DEFS[cual];
-      const ex=pla_meta[def.name];
-      $('plaBody').value = ex ? ex.bodyText : def.body;
-      const bts = (ex && ex.botones && ex.botones.length) ? ex.botones : def.botones;
-      $('plaBtn1').value=bts[0]||''; $('plaBtn2').value=bts[1]||''; $('plaBtn3').value=bts[2]||'';
+    function pla_renderLista(){
+      if(!pla_lista.length){ $('plaLista').innerHTML='<div class="vacio">Aún no hay plantillas. Pulsa «+ Nueva plantilla» para crear la primera.</div>'; return; }
+      const cat={UTILITY:'Utility',MARKETING:'Marketing',AUTHENTICATION:'Auth'};
+      const filas=pla_lista.map((p,i)=>`<tr>
+        <td><strong>${esc(p.name)}</strong></td>
+        <td>${esc(cat[p.category]||p.category||'')}</td>
+        <td>${esc(p.language||'es')}</td>
+        <td>${pla_badge(p.estado)}</td>
+        <td><div class="acc-btns">
+          <button class="acc" data-acc="ver" data-i="${i}">Ver</button>
+          <button class="acc" data-acc="editar" data-i="${i}">Editar</button>
+          <button class="acc del" data-acc="borrar" data-i="${i}">Borrar</button>
+        </div></td></tr>`).join('');
+      $('plaLista').innerHTML=`<table><thead><tr><th>Nombre</th><th>Categoría</th><th>Idioma</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${filas}</tbody></table>`;
+      $('plaLista').querySelectorAll('.acc').forEach(b=> b.addEventListener('click', ()=>{
+        const p=pla_lista[+b.dataset.i];
+        if(b.dataset.acc==='borrar') pla_borrar(p); else pla_abrirEditor(p);
+      }));
+    }
+
+    function pla_setCta(btns){
+      const rows=$('pfBtnCta').querySelectorAll('.cta-row');
+      rows.forEach((row,i)=>{
+        const b=btns[i]||{};
+        row.querySelector('.cta-sub').value=b.subtype||(i===0?'PHONE_NUMBER':'');
+        row.querySelector('.cta-text').value=b.text||'';
+        row.querySelector('.cta-val').value=b.value||'';
+      });
+    }
+    function pla_getCta(){
+      const out=[];
+      $('pfBtnCta').querySelectorAll('.cta-row').forEach(row=>{
+        const subtype=row.querySelector('.cta-sub').value;
+        const text=row.querySelector('.cta-text').value.trim();
+        const value=row.querySelector('.cta-val').value.trim();
+        if(subtype && text && value) out.push({subtype, text, value});
+      });
+      return out;
+    }
+    function pla_getQuick(){
+      return ['pfQr1','pfQr2','pfQr3'].map(id=>$(id).value.trim()).filter(Boolean).map(t=>({text:t}));
+    }
+
+    function pla_abrirEditor(p){
+      pla_editId = (p && p.draft_id) ? p.draft_id : null;
+      $('plaEdTitulo').textContent = p ? 'Editar plantilla' : 'Nueva plantilla';
+      $('pfNombre').value = p ? (p.name||'') : '';
+      $('pfNombre').disabled = !!(p && p.estado && p.estado!=='BORRADOR');
+      $('pfCategoria').value = (p && p.category) || 'UTILITY';
+      $('pfIdioma').value = (p && p.language) || 'es';
+      $('pfHeaderTipo').value = (p && p.header_type) || '';
+      $('pfHeaderTexto').value = (p && p.header_text) || '';
+      $('pfBody').value = (p && p.body_text) || '';
+      $('pfFooter').value = (p && p.footer_text) || '';
+      const bt=(p && p.button_type) || '';
+      $('pfBtnTipo').value=bt;
+      const btns=(p && p.buttons) || [];
+      $('pfQr1').value=''; $('pfQr2').value=''; $('pfQr3').value='';
+      if(bt==='QUICK_REPLY'){ $('pfQr1').value=btns[0]?btns[0].text:''; $('pfQr2').value=btns[1]?btns[1].text:''; $('pfQr3').value=btns[2]?btns[2].text:''; }
+      pla_setCta(bt==='CTA'?btns:[]);
+      pla_ejemplo = (p && p.ejemplo && p.ejemplo.length) ? p.ejemplo.slice() : PLA_EJ_DEF.slice();
       $('plaResultado').textContent='';
-      $('plaEstadoActual').innerHTML = ex ? `En Meta: <strong>${esc(ex.status)}</strong> · nombre <code>${esc(def.name)}</code>` : `Aún no creada en Meta · nombre <code>${esc(def.name)}</code>`;
+      pla_syncHeader(); pla_syncBotones(); pla_syncEjemplos(); pla_preview();
+      $('plaEditor').style.display='';
+      $('plaListaWrap').style.display='none';
+      $('plaNueva').style.display='none';
+      $('plaEditor').scrollIntoView({behavior:'smooth', block:'start'});
     }
-    async function pla_guardar(){
-      const def=PLA_DEFS[pla_actual];
-      const ex=pla_meta[def.name];
-      const bodyText=$('plaBody').value.trim();
-      const botones=[$('plaBtn1').value.trim(),$('plaBtn2').value.trim(),$('plaBtn3').value.trim()].filter(Boolean);
-      if(!bodyText){ $('plaResultado').innerHTML='<span class="warn">El texto no puede estar vacío.</span>'; return; }
-      $('plaResultado').textContent='Enviando a Meta…';
-      const payload = ex
-        ? { accion:'editar', id:ex.id, bodyText, botones, ejemplo:PLA_EJEMPLO, category:'UTILITY' }
-        : { accion:'crear', name:def.name, language:'es', category:'UTILITY', bodyText, botones, ejemplo:PLA_EJEMPLO };
-      try {
-        const { data, error } = await sb.functions.invoke('plantillas-', { body:payload });
-        if (error) { $('plaResultado').innerHTML='<span class="warn">Error al enviar a Meta.</span>'; return; }
-        if (data && data.configurado===false) { $('plaResultado').innerHTML='<span class="warn">Meta no está conectado todavía, no se ha enviado nada.</span>'; return; }
-        if (data && data.ok) { $('plaResultado').innerHTML='<span class="okmsg">Enviada a revisión. Meta suele responder en minutos. Pulsa Actualizar para ver el estado.</span>'; pla_cargar(); }
-        else { $('plaResultado').innerHTML='<span class="warn">Meta devolvió un error: '+esc(JSON.stringify(data&&(data.resultado||data.error)||data))+'</span>'; }
-      } catch(e){ $('plaResultado').innerHTML='<span class="warn">No se pudo conectar con la función.</span>'; }
+    function pla_cerrarEditor(){
+      $('plaEditor').style.display='none';
+      $('plaListaWrap').style.display='';
+      $('plaNueva').style.display='';
+      pla_editId=null;
     }
+    function pla_cargarPreset(key){
+      const p=PLA_PRESETS[key]; if(!p) return;
+      pla_editId=null;
+      $('pfNombre').value=p.name; $('pfNombre').disabled=false;
+      $('pfCategoria').value=p.category; $('pfIdioma').value=p.language;
+      $('pfHeaderTipo').value=p.header_type||''; $('pfHeaderTexto').value=p.header_text||'';
+      $('pfBody').value=p.body_text; $('pfFooter').value=p.footer_text||'';
+      $('pfBtnTipo').value=p.button_type||'';
+      $('pfQr1').value=''; $('pfQr2').value=''; $('pfQr3').value='';
+      if(p.button_type==='QUICK_REPLY'){ $('pfQr1').value=p.buttons[0].text; $('pfQr2').value=p.buttons[1].text; $('pfQr3').value=p.buttons[2].text; }
+      pla_setCta(p.button_type==='CTA'?p.buttons:[]);
+      pla_ejemplo=p.ejemplo.slice();
+      pla_syncHeader(); pla_syncBotones(); pla_syncEjemplos(); pla_preview();
+    }
+
+    function pla_syncHeader(){ $('pfHeaderTexto').style.display = $('pfHeaderTipo').value==='TEXT' ? '' : 'none'; pla_preview(); }
+    function pla_syncBotones(){
+      const t=$('pfBtnTipo').value;
+      $('pfBtnQuick').style.display = t==='QUICK_REPLY' ? '' : 'none';
+      $('pfBtnCta').style.display = t==='CTA' ? '' : 'none';
+      pla_preview();
+    }
+    function pla_syncEjemplos(){
+      const n=pla_numVars($('pfBody').value);
+      const cont=$('pfEjemplos'), lbl=$('pfEjLbl');
+      if(n<1){ cont.style.display='none'; lbl.style.display='none'; cont.innerHTML=''; return; }
+      lbl.style.display=''; cont.style.display='';
+      let html='';
+      for(let i=0;i<n;i++){ html+=`<input data-ej="${i}" placeholder="ej. ${esc(PLA_VAR_NOMBRES[i]||('var'+(i+1)))}" value="${esc(pla_ejemplo[i]||'')}">`; }
+      cont.innerHTML=html;
+      cont.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', ()=>{ pla_ejemplo[+inp.dataset.ej]=inp.value; pla_preview(); }));
+    }
+    function pla_insertVar(v){
+      const ta=$('pfBody'); const s=ta.selectionStart, e=ta.selectionEnd;
+      ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
+      ta.focus(); ta.selectionStart=ta.selectionEnd=s+v.length;
+      pla_syncEjemplos(); pla_preview();
+    }
+
+    function pla_subVars(s){ return (s||'').replace(/\{\{\s*(\d+)\s*\}\}/g,(m,n)=>{ const v=pla_ejemplo[(+n)-1]; return (v!=null && v!=='') ? v : m; }); }
+    function pla_waFmt(s){ return esc(s||'').replace(/\*(.+?)\*/g,'<strong>$1</strong>'); }
+    function pla_preview(){
+      const ht = $('pfHeaderTipo').value==='TEXT' ? $('pfHeaderTexto').value : '';
+      $('pvHeader').innerHTML = pla_waFmt(pla_subVars(ht));
+      $('pvBody').innerHTML   = pla_waFmt(pla_subVars($('pfBody').value));
+      $('pvFooter').innerHTML = pla_waFmt($('pfFooter').value);
+      const t=$('pfBtnTipo').value; let btns=[];
+      if(t==='QUICK_REPLY') btns=pla_getQuick().map(b=>b.text);
+      else if(t==='CTA') btns=pla_getCta().map(b=>b.text);
+      $('pvBtns').innerHTML = btns.map(b=>`<div class="wa-btn">${esc(b)}</div>`).join('');
+      $('pfBodyCount').textContent = $('pfBody').value.length+'/1024';
+      $('pfFooterCount').textContent = $('pfFooter').value.length+'/60';
+    }
+
+    function pla_recoger(){
+      const t=$('pfBtnTipo').value;
+      let buttons=[];
+      if(t==='QUICK_REPLY') buttons=pla_getQuick();
+      else if(t==='CTA') buttons=pla_getCta();
+      const body=$('pfBody').value;
+      const nv=pla_numVars(body);
+      return {
+        id: pla_editId,
+        name: $('pfNombre').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,''),
+        language: $('pfIdioma').value,
+        category: $('pfCategoria').value,
+        header_type: $('pfHeaderTipo').value==='TEXT' ? 'TEXT' : null,
+        header_text: $('pfHeaderTipo').value==='TEXT' ? ($('pfHeaderTexto').value.trim()||null) : null,
+        body_text: body.trim(),
+        footer_text: $('pfFooter').value.trim() || null,
+        button_type: t || null,
+        buttons,
+        ejemplo: pla_ejemplo.slice(0, Math.max(nv, 0))
+      };
+    }
+
+    async function pla_guardar(publicar){
+      const p=pla_recoger();
+      const res=$('plaResultado');
+      if(!p.name){ res.innerHTML='<span class="warn">Ponle un nombre a la plantilla.</span>'; return; }
+      if(!/^[a-z0-9_]+$/.test(p.name)){ res.innerHTML='<span class="warn">El nombre solo admite minúsculas, números y guion bajo.</span>'; return; }
+      if(!p.body_text){ res.innerHTML='<span class="warn">El cuerpo del mensaje no puede estar vacío.</span>'; return; }
+      if(publicar){
+        if(/^\s*\{\{/.test(p.body_text) || /\}\}\s*$/.test(p.body_text)){ res.innerHTML='<span class="warn">El cuerpo no puede empezar ni terminar con una variable. Añade alguna palabra antes/después.</span>'; return; }
+        if(p.button_type==='QUICK_REPLY' && !p.buttons.length){ res.innerHTML='<span class="warn">Has elegido botones de respuesta rápida pero no hay ninguno escrito.</span>'; return; }
+      }
+      $('pfNombre').value=p.name;
+      res.textContent = publicar ? 'Enviando a Meta…' : 'Guardando borrador…';
+      $('pfBorrador').disabled=true; $('pfPublicar').disabled=true;
+      try{
+        const accion = publicar ? 'publicar' : 'guardar_borrador';
+        const { data, error } = await sb.functions.invoke('plantillas-', { body:{ accion, plantilla:p } });
+        if(error) throw error;
+        if(data && data.configurado===false && publicar){
+          res.innerHTML='<span class="warn">Borrador guardado. Meta aún no está conectado, así que NO se ha enviado a revisión. Cuando pongas el WA_TOKEN en Supabase, vuelve a pulsar «Guardar y publicar».</span>';
+          await pla_cargar();
+        } else if(data && data.ok){
+          res.innerHTML='<span class="okmsg">'+(publicar?'Enviada a revisión. Meta suele responder en unos minutos; pulsa «Actualizar» para ver el estado.':'Borrador guardado.')+'</span>';
+          await pla_cargar();
+          if(publicar) pla_cerrarEditor();
+        } else {
+          res.innerHTML='<span class="warn">Meta devolvió un error: '+esc(JSON.stringify((data&&(data.error||data.resultado))||data))+'</span>';
+        }
+      }catch(e){ res.innerHTML='<span class="warn">No se pudo conectar con la función plantillas-.</span>'; }
+      $('pfBorrador').disabled=false; $('pfPublicar').disabled=false;
+    }
+
+    async function pla_borrar(p){
+      const msg = (p.estado && p.estado!=='BORRADOR')
+        ? '¿Borrar la plantilla "'+p.name+'"? Está publicada en Meta, así que también se eliminará allí.'
+        : '¿Borrar el borrador "'+p.name+'"?';
+      if(!confirm(msg)) return;
+      $('plaNotice').textContent='Borrando…';
+      try{
+        const { error } = await sb.functions.invoke('plantillas-', { body:{ accion:'borrar', id:p.draft_id||null, name:p.name } });
+        if(error) throw error;
+      }catch(e){}
+      pla_cargar();
+    }
+
 
     // ---- Importar citas (imp_) ----
     const IMP_AGENDA_DOCTOR = {
